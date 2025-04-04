@@ -34,13 +34,6 @@ bool Solver::solveIterative() {
     return false; // тимчасова заглушка
 }
 
-#include "solver.h"
-#include <iostream>
-#include <sstream>
-
-Solver::Solver(Field& field, Position start, Direction dir)
-    : field(field), line(start, dir) {}
-
 void Solver::printResult() const {
     int rows = field.getRows();
     int cols = field.getCols();
