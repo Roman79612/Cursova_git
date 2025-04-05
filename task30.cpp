@@ -8,6 +8,11 @@ using namespace std;
 int main() {
     // Створюємо поле 10x10
     Field field(10, 10);
+    // Стартова позиція і напрям
+    Position startPos = {0, 0};
+    Direction startDir = Direction::Down;
+    // Ініціалізація Solver
+    Solver solver(field, startPos, startDir);
 
     // Додаємо чорні клітинки
     field.placeCircle(8, 1, CellType::BlackCircle);
@@ -37,18 +42,10 @@ int main() {
     cout << "=== Initial field ===" << endl;
     field.print();
 
-    // Стартова позиція і напрям
-    Position startPos = {0, 0};
-    Direction startDir = Direction::Down;
-
-    // Ініціалізація Solver
-    Solver solver(field, startPos, startDir);
 
     // Запуск пошуку
-    cout << "\n=== Field is solved ===" << endl;
-
     if (solver.solve()) {
-        cout << "\nSolution found!\n";
+        cout << "\n=== Field is solved ===" << endl;
         solver.printResult();
     } else {
         cout << "\nSolution no found!\n";

@@ -17,4 +17,6 @@ public:
     int getRows() const;
     int getCols() const;
     bool hasPrivilegedCells() const;
+    bool hasOnlyWhiteCells() const;
+    bool hasOnlyBlackCells() const;
 };

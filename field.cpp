@@ -45,13 +45,43 @@ void Field::print() const {
 }
 
 bool Field::hasPrivilegedCells() const {
+    cout << "\nChecking for privileged cells...\n";
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x) {
             CellType type = grid[y][x].type;
-            if (type == CellType::BlackCircle || type == CellType::WhiteCircle) {
+            if (type == CellType::WhiteCircle) {
+                cout << "\nFound a white circle at (" << x << ", " << y << ")\n";
+                return true;
+            }
+            if (type == CellType::BlackCircle) {
+                cout << "\nFound a black circle at (" << x << ", " << y << ")\n";
                 return true;
             }
         }
     }
     return false;
+}
+
+bool Field::hasOnlyWhiteCells() const {
+    cout << "\nChecking for white cells...\n";
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < cols; ++x) {
+            if (grid[y][x].type != CellType::WhiteCircle) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Field::hasOnlyBlackCells() const {
+    cout << "\nChecking for black cells...\n";
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < cols; ++x) {
+            if (grid[y][x].type != CellType::BlackCircle) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
