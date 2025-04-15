@@ -35,3 +35,17 @@ void Line::setDirection(Direction dir) {
 int Line::getLength() const {
     return static_cast<int>(path.size());
 }
+
+bool Line::contains(Position pos) const {
+    for (const auto& p : path) {
+        if (p == pos)
+            return true;
+    }
+    return false;
+}
+
+void Line::reset() {
+    path.clear();
+    path.push_back({0, 0});
+    currentDir = Direction::Right;
+}

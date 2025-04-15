@@ -23,4 +23,14 @@ private:
     bool solveWhiteCellsIterative();
     bool solveBlackCellsRecursive();
     bool solveBlackCellsIterative();
+    bool isLoopClosed() const;
+    bool allPrivilegedVisited() const;
+    bool isDirectionChangeValid(Position pos, Direction from, Direction to) const;
+    bool checkConnectivity() const;
+    bool canReturnToStart() const;
+    bool isPathToAllUnvisitedPrivileged() const;
+    bool isLegalNextStep(Position next, Direction dir) const;
+    void saveState();
+    stack<Line> history;
+    void restoreState();
 };

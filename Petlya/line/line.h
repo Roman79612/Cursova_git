@@ -16,9 +16,8 @@ class Line {
 private:
     vector<Position> path;
     Direction currentDir;
-
 public:
-    Line(Position start, Direction dir);
+    Line(Position start = {0, 0}, Direction dir = Direction::Right);
     bool move(Position next);
     void undo();
     const vector<Position>& getPath() const;
@@ -26,4 +25,6 @@ public:
     Direction getDirection() const;
     void setDirection(Direction dir);
     int getLength() const;
+    bool contains(Position pos) const;
+    void reset();
 };
