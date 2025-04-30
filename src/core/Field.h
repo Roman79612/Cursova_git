@@ -1,25 +1,44 @@
 #ifndef FIELD_HPP
 #define FIELD_HPP
 
-#include "cell.hpp"
 #include <vector>
+#include "cell.hpp"
 
 /**
- * @brief Представляє все поле головоломки
+ * @brief Клас, що представляє все ігрове поле
  */
-
-class field {
-private:
-    int width;
-    int height;
-    std::vector<std::vector<cell>> cells;
-
+class Field {
 public:
-    field(int width_value, int height_value);
+    Field(int width, int height);
 
-    cell *get_cell(int x, int y);
+    /**
+     * @brief Отримати ширину і висоту
+     */
     int get_width() const;
     int get_height() const;
+
+    /**
+     * @brief Перевірити, чи координати в межах поля
+     */
+    bool is_valid(int x, int y) const;
+
+    /**
+     * @brief Отримати клітинку за координатами
+     */
+    Cell &get_cell(int x, int y);
+    const Cell &get_cell(int x, int y) const;
+
+    /**
+     * @brief Позначити напрямки в кожній клітинці
+     */
+    void update_directions();
+
+private:
+    int width_;
+    int height_;
+    std::vector<std::vector<Cell>> cells_;
+
+    void update_directions_for_cell(int x, int y);
 };
 
 #endif // FIELD_HPP
