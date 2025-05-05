@@ -4,43 +4,57 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-03
- Description: Header file for representing a single cell in the puzzle grid.
+ Revised: 2025-05-05
+ Description: Header for representing a cell in the puzzle grid.
  ------------------------------------------------------------------</Header>-*/
 
 #ifndef CELL_H
 #define CELL_H
 
-// Enum for cell types
+#include "direction.h"
+
+// Cell types
 enum class CellType {
     EMPTY,
-    WHITE_DOT,
-    BLACK_DOT,
+    BLACK,
+    WHITE,
     LINE
 };
 
-// Class representing a cell on the field
+// Represents a cell on the puzzle field
 class Cell {
+private:
+    int x;
+    int y;
+    CellType type;
+    bool visited;
+
+    Direction entry_dir;
+    Direction exit_dir;
+
+    wchar_t line_symbol;
+
 public:
     Cell();
-    explicit Cell(CellType type);
+    Cell(int x, int y);
+    Cell(int x, int y, CellType type);
 
+    int get_x() const;
+    int get_y() const;
     CellType get_type() const;
+    bool is_visited() const;
+
     void set_type(CellType new_type);
-    wchar_t get_line_symbol() const;
-    void set_line_symbol(wchar_t symbol);
+    void set_visited(bool state);
 
-    bool is_white_dot() const;
-    bool is_black_dot() const;
-    bool is_empty() const;
-    bool is_circle() const;
-    bool satisfy_circle_rule() const;
-    bool has_line() const;
-    bool is_filled() const;
+    void set_entry_dir(Direction dir);
+    void set_exit_dir(Direction dir);
+    Direction get_entry_dir() const;
+    Direction get_exit_dir() const;
 
-private:
-    CellType type;
-    wchar_t line_symbol;
+    void reset_dirs();
+    void set_symbol();
+    wchar_t get_symbol() const;
 };
 
 #endif // CELL_H

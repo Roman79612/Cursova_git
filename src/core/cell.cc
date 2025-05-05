@@ -1,134 +1,210 @@
 /* ----------------------------------------------------------------<Header>-
- Name: cell.cc
+ Name: cell.cpp
  Title: Cell class implementation
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-03
- Description: Source file implementing the constructor for Cell.
+ Revised: 2025-05-05
+ Description: Implementation of the Cell class for handling puzzle grid cells,
+              including handling directions and cell states.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/cell.h"
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::Cell
- Synopsis: Default constructor for an empty cell.
+/* ---------------------------------------------------------------------[<]- 
+ Function: Cell
+ Synopsis: Default constructor initializes a cell at (0, 0) with type EMPTY.
  ---------------------------------------------------------------------[>]-*/
-Cell::Cell()
-    : type(CellType::EMPTY)
-{}
+Cell::Cell() {
+    x = 0;
+    y = 0;
+    type = CellType::EMPTY;
+    visited = false;
+    entry_dir = Direction::NONE;
+    exit_dir = Direction::NONE;
+    line_symbol = get_symbol();
+}
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::Cell
- Synopsis: Constructor with specific cell type.
+/* ----------------------------------------------------------------<Function>-
+ Cell::Cell
+ Constructor that initializes a cell at position (x, y) with a given type.
+ ------------------------------------------------------------------ */
+Cell::Cell(int x, int y) {
+    this->x = x;
+    this->y = y;
+    type = CellType::EMPTY;
+    visited = false;
+    entry_dir = Direction::NONE;
+    exit_dir = Direction::NONE;
+    line_symbol = get_symbol();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: Cell
+ Synopsis: Constructor to initialize the cell with coordinates and type.
  ---------------------------------------------------------------------[>]-*/
-Cell::Cell(CellType type)
-    : type(type)
-{}
+Cell::Cell(int x, int y, CellType type) {
+    this->x = x;
+    this->y = y;
+    this->type = type;
+    visited = false;
+    entry_dir = Direction::NONE;
+    exit_dir = Direction::NONE;
+    line_symbol = get_symbol();
+}
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::get_type
- Synopsis: Returns the current type of the cell.
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_x
+ Synopsis: Getter for the x-coordinate of the cell.
+ ---------------------------------------------------------------------[>]-*/
+int Cell::get_x() const {
+    return x;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_y
+ Synopsis: Getter for the y-coordinate of the cell.
+ ---------------------------------------------------------------------[>]-*/
+int Cell::get_y() const {
+    return y;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_type
+ Synopsis: Getter for the type of the cell.
  ---------------------------------------------------------------------[>]-*/
 CellType Cell::get_type() const {
     return type;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::set_type
- Synopsis: Sets the type of the cell.
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_visited
+ Synopsis: Check if the cell has been visited.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_visited() const {
+    return visited;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_type
+ Synopsis: Set the type of the cell.
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_type(CellType new_type) {
     type = new_type;
+    set_symbol();
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::get_line_symbol
- Synopsis: Returns the Unicode symbol used for representing a line in the cell.
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_visited
+ Synopsis: Set the visited status of the cell.
  ---------------------------------------------------------------------[>]-*/
-wchar_t Cell::get_line_symbol() const {
-    return line_symbol;
+void Cell::set_visited(bool state) {
+    visited = state;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::set_line_symbol
- Synopsis: Sets the Unicode symbol used for representing a line in the cell.
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_entry_dir
+ Synopsis: Set the entry direction for the line into the cell.
  ---------------------------------------------------------------------[>]-*/
-void Cell::set_line_symbol(wchar_t symbol) {
-    type = CellType::LINE;
-    line_symbol = symbol;
+void Cell::set_entry_dir(Direction dir) {
+    entry_dir = dir;
+    set_symbol();
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::is_white_dot
- Synopsis: Returns true if the cell contains a white dot.
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_exit_dir
+ Synopsis: Set the exit direction for the line out of the cell.
  ---------------------------------------------------------------------[>]-*/
-bool Cell::is_white_dot() const {
-    return type == CellType::WHITE_DOT;
+void Cell::set_exit_dir(Direction dir) {
+    exit_dir = dir;
+    set_symbol();
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::is_black_dot
- Synopsis: Returns true if the cell contains a black dot.
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_entry_dir
+ Synopsis: Get the entry direction of the line into the cell.
  ---------------------------------------------------------------------[>]-*/
-bool Cell::is_black_dot() const {
-    return type == CellType::BLACK_DOT;
+Direction Cell::get_entry_dir() const {
+    return entry_dir;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::is_empty
- Synopsis: Returns true if the cell is empty.
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_exit_dir
+ Synopsis: Get the exit direction of the line out of the cell.
  ---------------------------------------------------------------------[>]-*/
-bool Cell::is_empty() const {
-    return type == CellType::EMPTY;
+Direction Cell::get_exit_dir() const {
+    return exit_dir;
 }
 
-/* ----------------------------------------------------------------<Header>-
- Function: is_circle
- Synopsis: Checks if the cell represents a circle (white or black dot).
- Description: Returns true if the cell is a white or black dot, indicating it is a circle.
- ------------------------------------------------------------------</Header>-*/
-bool Cell::is_circle() const {
-    return type == CellType::WHITE_DOT || type == CellType::BLACK_DOT;
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: Cell::has_line
- Synopsis: Returns true if the cell contains a line.
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_dirs
+ Synopsis: Reset both directions (entry and exit) to the default (UP).
  ---------------------------------------------------------------------[>]-*/
-bool Cell::has_line() const {
-    return type == CellType::LINE;
+void Cell::reset_dirs() {
+    entry_dir = Direction::NONE;
+    exit_dir = Direction::NONE;
 }
 
-/* ----------------------------------------------------------------<Header>-
- Function: satisfy_circle_rule
- Synopsis: Checks if the cell satisfies the Masyu circle rule.
- Description: The circle rule in Masyu requires that a circle cell must either:
-              1. Have a line passing through it.
-              2. Have the line bent at the circle.
-              If the circle cell violates any of these conditions, the rule is not satisfied.
- ------------------------------------------------------------------</Header>-*/
-bool Cell::satisfy_circle_rule() const {
-    // Example logic for circle rule:
-    if (type == CellType::WHITE_DOT) {
-        // White dot rule: Must have an unbroken line passing through it.
-        // For simplicity, we assume a basic check for now
-        return true; // Replace with your actual rule logic
+/* ----------------------------------------------------------------<Function>-
+ void Cell::set_line_symbol
+ Sets the visual symbol for the line in this cell.
+ ------------------------------------------------------------------ */
+void Cell::set_symbol() {
+    line_symbol = get_symbol();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_line_symbol
+ Synopsis: Set the line symbol based on the entry and exit directions.
+ ---------------------------------------------------------------------[>]-*/
+wchar_t Cell::get_symbol() const {
+    if (type == CellType::LINE) {
+        if ((entry_dir == Direction::UP && exit_dir == Direction::DOWN) ||
+            (entry_dir == Direction::DOWN && exit_dir == Direction::UP) ||
+            (entry_dir == Direction::NONE && exit_dir == Direction::DOWN) ||
+            (entry_dir == Direction::DOWN && exit_dir == Direction::NONE) ||
+            (entry_dir == Direction::UP && exit_dir == Direction::NONE) ||
+            (entry_dir == Direction::NONE && exit_dir == Direction::UP)) {
+            return L'│';
+        }
+
+        if ((entry_dir == Direction::LEFT && exit_dir == Direction::RIGHT) ||
+            (entry_dir == Direction::RIGHT && exit_dir == Direction::LEFT) ||
+            (entry_dir == Direction::NONE && exit_dir == Direction::RIGHT) ||
+            (entry_dir == Direction::RIGHT && exit_dir == Direction::NONE) ||
+            (entry_dir == Direction::LEFT && exit_dir == Direction::NONE) ||
+            (entry_dir == Direction::NONE && exit_dir == Direction::LEFT)) {
+            return L'─';
+        }
+
+        if ((entry_dir == Direction::UP && exit_dir == Direction::RIGHT) ||
+            (entry_dir == Direction::RIGHT && exit_dir == Direction::UP)) {
+            return L'┐';
+        }
+
+        if ((entry_dir == Direction::UP && exit_dir == Direction::LEFT) ||
+            (entry_dir == Direction::LEFT && exit_dir == Direction::UP)) {
+            return L'┌';
+        }
+
+        if ((entry_dir == Direction::DOWN && exit_dir == Direction::RIGHT) ||
+            (entry_dir == Direction::RIGHT && exit_dir == Direction::DOWN)) {
+            return L'┘';
+        }
+
+        if ((entry_dir == Direction::DOWN && exit_dir == Direction::LEFT) ||
+            (entry_dir == Direction::LEFT && exit_dir == Direction::DOWN)) {
+            return L'└';
+        }
+        return L'?';
+
+    } else if (type == CellType::WHITE) {
+        return L'●';
+    } else if (type == CellType::BLACK) {
+        return L'○';
+    } else if (type == CellType::EMPTY) {
+        return L' ';
+    } else {
+        return L'?';
     }
-    if (type == CellType::BLACK_DOT) {
-        // Black dot rule: Must have a line that bends at the dot.
-        return true; // Replace with your actual rule logic
-    }
-    return false;
-}
-
-/* ----------------------------------------------------------------<Header>-
- Function: is_filled
- Synopsis: Checks if the cell is filled.
- Description: A filled cell is one that is not empty. For Masyu, a cell that is either a dot
-              or contains a line symbol is considered filled.
- ------------------------------------------------------------------</Header>-*/
-bool Cell::is_filled() const {
-    // A cell is filled if it is not empty
-    return type != CellType::EMPTY;
 }

@@ -12,14 +12,27 @@
 #define RULES_H
 
 #include "../core_headers/field.h"
-#include "../logic_headers/graph.h"
+#include "../core_headers/cell.h"
+#include "../core_headers/direction.h"
 
-class Rules {
-public:
-    static bool check_white_dot(const Field& field, int x, int y, const Graph& graph);
-    static bool check_black_dot(const Field& field, int x, int y, const Graph& graph);
-    static bool validate_all_dots(const Field& field, const Graph& graph);
-    static bool validate_cycle(const Field& field, const Graph& graph);
-};
+namespace Rules {
+    // Applies the white edge rule
+    void apply_white_edge_rule(Field& field, int x, int y);
+
+    // Applies the black edge rule
+    void apply_black_edge_rule(Field& field, int x, int y);
+
+    // Applies the white pair rule
+    void apply_white_pair_rule(Field& field, int x, int y);
+
+    // Applies the white triplet rule
+    void apply_white_triplet_rule(Field& field, int x, int y);
+
+    // Applies the black pair rule
+    void apply_black_pair_rule(Field& field, int x, int y);
+
+    // Applies the black and white diagonal rule
+    void apply_black_white_diagonal_rule(Field& field, int x, int y);
+}
 
 #endif // RULES_H

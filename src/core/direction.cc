@@ -1,53 +1,100 @@
 /* ----------------------------------------------------------------<Header>-
- Name: direction.cc
+ Name: direction.cpp
  Title: Direction class implementation
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-03
- Description: Source file implementing methods for direction handling.
+ Revised: 2025-05-05
+ Description: Implementation of direction movement and utility functions.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/direction.h"
 
-/* ---------------------------------------------------------------------[<]- 
- Function: DirectionHelper::get_dx
- Synopsis: Returns the change in the x-coordinate for a given direction.
- ---------------------------------------------------------------------[>]-*/
+/* ---------------------------------------------------------------------[<]-
+ Function: get_dx
+ Synopsis: Returns X-axis movement for the given direction.
+ ---------------------------------------------------------------------[>]*/
 int DirectionHelper::get_dx(Direction dir) {
     switch (dir) {
-        case Direction::UP: return 0;
-        case Direction::DOWN: return 0;
-        case Direction::LEFT: return -1;
+        case Direction::LEFT:  return -1;
         case Direction::RIGHT: return 1;
-        default: return 0;
+        default:               return 0;
     }
 }
 
-/* ---------------------------------------------------------------------[<]- 
- Function: DirectionHelper::get_dy
- Synopsis: Returns the change in the y-coordinate for a given direction.
- ---------------------------------------------------------------------[>]-*/
+/* ---------------------------------------------------------------------[<]-
+ Function: get_dy
+ Synopsis: Returns Y-axis movement for the given direction.
+ ---------------------------------------------------------------------[>]*/
 int DirectionHelper::get_dy(Direction dir) {
     switch (dir) {
-        case Direction::UP: return -1;
-        case Direction::DOWN: return 1;
-        case Direction::LEFT: return 0;
-        case Direction::RIGHT: return 0;
-        default: return 0;
+        case Direction::UP:    return -1;
+        case Direction::DOWN:  return 1;
+        default:               return 0;
     }
 }
 
-/* ---------------------------------------------------------------------[<]- 
- Function: DirectionHelper::direction_to_string
- Synopsis: Converts a direction to a string for output.
- ---------------------------------------------------------------------[>]-*/
-const char* DirectionHelper::direction_to_string(Direction dir) {
+/* ---------------------------------------------------------------------[<]-
+ Function: opposite
+ Synopsis: Returns opposite direction.
+ ---------------------------------------------------------------------[>]*/
+Direction DirectionHelper::opposite(Direction dir) {
     switch (dir) {
-        case Direction::UP: return "UP";
-        case Direction::DOWN: return "DOWN";
-        case Direction::LEFT: return "LEFT";
+        case Direction::UP:    return Direction::DOWN;
+        case Direction::DOWN:  return Direction::UP;
+        case Direction::LEFT:  return Direction::RIGHT;
+        case Direction::RIGHT: return Direction::LEFT;
+        default:               return Direction::NONE;
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: rotate_left
+ Synopsis: Returns direction rotated 90° counter-clockwise.
+ ---------------------------------------------------------------------[>]*/
+Direction DirectionHelper::rotate_left(Direction dir) {
+    switch (dir) {
+        case Direction::UP:    return Direction::LEFT;
+        case Direction::LEFT:  return Direction::DOWN;
+        case Direction::DOWN:  return Direction::RIGHT;
+        case Direction::RIGHT: return Direction::UP;
+        default:               return Direction::NONE;
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: rotate_right
+ Synopsis: Returns direction rotated 90° clockwise.
+ ---------------------------------------------------------------------[>]*/
+Direction DirectionHelper::rotate_right(Direction dir) {
+    switch (dir) {
+        case Direction::UP:    return Direction::RIGHT;
+        case Direction::RIGHT: return Direction::DOWN;
+        case Direction::DOWN:  return Direction::LEFT;
+        case Direction::LEFT:  return Direction::UP;
+        default:               return Direction::NONE;
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: is_valid
+ Synopsis: Checks if the direction is valid (not NONE).
+ ---------------------------------------------------------------------[>]*/
+bool DirectionHelper::is_valid(Direction dir) {
+    return dir != Direction::NONE;
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: direction_to_string
+ Synopsis: Returns direction name as string.
+ ---------------------------------------------------------------------[>]*/
+const char *DirectionHelper::direction_to_string(Direction dir) {
+    switch (dir) {
+        case Direction::UP:    return "UP";
+        case Direction::DOWN:  return "DOWN";
+        case Direction::LEFT:  return "LEFT";
         case Direction::RIGHT: return "RIGHT";
-        default: return "UNKNOWN";
+        case Direction::NONE:  return "NONE";
+        default:               return "UNKNOWN";
     }
 }

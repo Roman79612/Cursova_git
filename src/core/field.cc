@@ -1,145 +1,184 @@
 /* ----------------------------------------------------------------<Header>-
- Name: field.cc
+ Name: field.cpp
  Title: Field class implementation
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-03
- Description: Source file implementing the puzzle grid logic.
+ Revised: 2025-05-05
+ Description: Implementation of the Field class for managing puzzle grid,
+              including access, validation, and utility methods.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/field.h"
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::Field
- Synopsis: Constructor initializing the field with given dimensions.
+/* ---------------------------------------------------------------------[<]- 
+ Function: Field
+ Synopsis: Constructor to initialize the grid with given dimensions.
  ---------------------------------------------------------------------[>]-*/
-Field::Field(int width, int height) : width(width), height(height), cells(height, std::vector<Cell>(width)) {}
+Field::Field(int width, int height) : width(width), height(height), cells(height, std::vector<Cell>(width)) {
+    for (int y = 0; y < height; ++y)
+        for (int x = 0; x < width; ++x)
+            cells[y][x] = Cell(x, y);
+}
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::get_cell
- Synopsis: Returns the cell at specified coordinates.
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_cell
+ Synopsis: Returns a copy of the cell at (x, y).
  ---------------------------------------------------------------------[>]-*/
-Cell Field::get_cell(int x, int y) const {
+Cell& Field::get_cell(int x, int y) {
     return cells[y][x];
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::set_cell
- Synopsis: Sets the cell at specified coordinates.
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_cell
+ Synopsis: Sets the cell at the specified coordinates.
  ---------------------------------------------------------------------[>]-*/
-void Field::set_cell(int x, int y, Cell cell) {
+void Field::set_cell(const Cell& cell) {
+    int x = cell.get_x();
+    int y = cell.get_y();
     cells[y][x] = cell;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::in_bounds
- Synopsis: Checks whether the given coordinates are within the field.
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_cell_type
+ Synopsis: Sets the type of the cell at (x, y).
+ ---------------------------------------------------------------------[>]-*/
+void Field::set_cell_type(const Cell& cell, CellType type) {
+    int x = cell.get_x();
+    int y = cell.get_y();
+    cells[y][x].set_type(type);
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_all_dirs
+ Synopsis: Resets directions of all cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+void Field::reset_all_dirs() {
+    for (auto& row : cells)
+        for (auto& cell : row)
+            cell.reset_dirs();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_all_visited
+ Synopsis: Resets visited status of all cells.
+ ---------------------------------------------------------------------[>]-*/
+void Field::reset_all_visited() {
+    for (auto& row : cells)
+        for (auto& cell : row)
+            cell.set_visited(false);
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: in_bounds
+ Synopsis: Checks if (x, y) is within field bounds.
  ---------------------------------------------------------------------[>]-*/
 bool Field::in_bounds(int x, int y) const {
     return x >= 0 && x < width && y >= 0 && y < height;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::get_width
- Synopsis: Returns the width of the field.
+/* ---------------------------------------------------------------------[<]- 
+ Function: can_go
+ Synopsis: Checks if movement from (x, y) in given direction is within bounds.
+ ---------------------------------------------------------------------[>]-*/
+bool Field::can_go(int x, int y, Direction dir) const {
+    int nx = x + DirectionHelper::get_dx(dir);
+    int ny = y + DirectionHelper::get_dy(dir);
+    return in_bounds(nx, ny);
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_width
+ Synopsis: Returns width of the field.
  ---------------------------------------------------------------------[>]-*/
 int Field::get_width() const {
     return width;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::get_height
- Synopsis: Returns the height of the field.
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_height
+ Synopsis: Returns height of the field.
  ---------------------------------------------------------------------[>]-*/
 int Field::get_height() const {
     return height;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::reset
- Synopsis: Resets the field to all empty cells.
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset
+ Synopsis: Resets all visited flags and directions in the field.
  ---------------------------------------------------------------------[>]-*/
 void Field::reset() {
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            cells[y][x] = Cell(CellType::EMPTY);
-        }
-    }
+    reset_all_dirs();
+    reset_all_visited();
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::clone
- Synopsis: Creates a copy of the current field.
+/* ---------------------------------------------------------------------[<]- 
+ Function: clone
+ Synopsis: Returns a deep copy of the field.
  ---------------------------------------------------------------------[>]-*/
 Field Field::clone() const {
     Field copy(width, height);
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            copy.set_cell(x, y, cells[y][x]);
-        }
-    }
+    copy.cells = cells;
     return copy;
 }
 
-/* ---------------------------------------------------------------------[<]-
- Function: Field::get_neighbors
- Synopsis: Returns coordinates of valid neighbor cells (UP, DOWN, LEFT, RIGHT).
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_neighbors
+ Synopsis: Returns valid (x, y) coordinates of neighboring cells.
  ---------------------------------------------------------------------[>]-*/
 std::vector<std::pair<int, int>> Field::get_neighbors(int x, int y) const {
     std::vector<std::pair<int, int>> neighbors;
     for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
         int nx = x + DirectionHelper::get_dx(dir);
         int ny = y + DirectionHelper::get_dy(dir);
-        if (in_bounds(nx, ny)) {
+        if (in_bounds(nx, ny))
             neighbors.emplace_back(nx, ny);
-        }
     }
     return neighbors;
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: Field::print_initial_state
- Synopsis: Prints the initial state of the puzzle grid, showing all cell types.
+ Function: available_directions
+ Synopsis: Returns list of directions available from (x, y).
  ---------------------------------------------------------------------[>]-*/
-void Field::print_initial_state() const {
-    for (const auto& row : cells) {
-        for (const auto& cell : row) {
-            switch (cell.get_type()) {
-                case CellType::EMPTY:
-                    std::cout << " .";
-                    break;
-                case CellType::WHITE_DOT:
-                    std::cout << u8"○";
-                    break;
-                case CellType::BLACK_DOT:
-                    std::cout << u8"●";
-                    break;
-                case CellType::LINE:
-                    std::wcout << cell.get_line_symbol();
-                    break;
-                default:
-                    std::cout << '?';
-            }
-        }
-        std::cout << std::endl;
+std::vector<Direction> Field::available_directions(int x, int y) const {
+    std::vector<Direction> dirs;
+    for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
+        if (can_go(x, y, dir))
+            dirs.push_back(dir);
     }
+    return dirs;
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: Field::print_final_state
- Synopsis: Prints the final state of the puzzle grid, displaying only the line path.
+ Function: Field::print_field
+ Synopsis: Prints the grid, showing all cell types.
  ---------------------------------------------------------------------[>]-*/
-void Field::print_final_state() const {
-    std::wcout << L"Final Field:\n";
-    for (const auto& row : cells) {
-        for (const auto& cell : row) {
-            if (cell.has_line()) {
-                std::wcout << cell.get_line_symbol();
-            } else {
-                std::wcout << L' ';
-            }
+void Field::print_field() const {
+    int rows = get_height();
+    int cols = get_width();
+
+    auto print_horizontal = [&](wchar_t left, wchar_t middle, wchar_t right) {
+        std::wcout << left;
+        for (int x = 0; x < cols; ++x) {
+            std::wcout << L"───";
+            if (x != cols - 1) std::wcout << middle;
         }
-        std::wcout << std::endl;
+        std::wcout << right << std::endl;
+    };
+
+    print_horizontal(L'┌', L'┬', L'┐');
+
+    for (int y = 0; y < rows; ++y) {
+        std::wcout << L"│";
+        for (int x = 0; x < cols; ++x) {
+            std::wcout << L' ' << cells[y][x].get_symbol() << L' ' << L"│";
+        }
+        std::wcout << L"\n";
+
+        if (y != rows - 1)
+            print_horizontal(L'├', L'┼', L'┤');
+        else
+            print_horizontal(L'└', L'┴', L'┘');
     }
 }
