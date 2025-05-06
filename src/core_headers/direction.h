@@ -28,7 +28,7 @@ public:
     static Direction opposite(Direction dir);
     static Direction rotate_left(Direction dir);
     static Direction rotate_right(Direction dir);
-    static bool is_valid(Direction dir);
+    static bool is_valid_direction(Direction dir);
     static const char *direction_to_string(Direction dir);
 };
 

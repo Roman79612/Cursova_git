@@ -80,8 +80,8 @@ Direction DirectionHelper::rotate_right(Direction dir) {
  Function: is_valid
  Synopsis: Checks if the direction is valid (not NONE).
  ---------------------------------------------------------------------[>]*/
-bool DirectionHelper::is_valid(Direction dir) {
-    return dir != Direction::NONE;
+bool DirectionHelper::is_valid_direction(Direction dir) {
+    return dir == Direction::UP || dir == Direction::DOWN || dir == Direction::LEFT || dir == Direction::RIGHT || dir == Direction::NONE;
 }
 
 /* ---------------------------------------------------------------------[<]-

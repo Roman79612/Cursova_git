@@ -14,12 +14,16 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <stdexcept>
+#include <string>
 #include "../core_headers/cell.h"
 #include "../core_headers/direction.h"
 
 class Field {
 public:
-    Field(int width, int height);
+    Field();
+    void init(int width, int height);
+    bool is_initialized() const;
 
     Cell& get_cell(int x, int y);
     int get_width() const;

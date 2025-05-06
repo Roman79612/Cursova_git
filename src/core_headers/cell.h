@@ -11,6 +11,9 @@
 #ifndef CELL_H
 #define CELL_H
 
+#include <iostream>
+#include <stdexcept>
+#include <string>
 #include "direction.h"
 
 // Cell types
@@ -55,6 +58,7 @@ public:
     void reset_dirs();
     void set_symbol();
     wchar_t get_symbol() const;
+    bool is_valid_type(CellType type) const;
 };
 
 #endif // CELL_H

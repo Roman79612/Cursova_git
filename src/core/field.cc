@@ -13,12 +13,37 @@
 
 /* ---------------------------------------------------------------------[<]- 
  Function: Field
- Synopsis: Constructor to initialize the grid with given dimensions.
+ Synopsis: Default constructor initializes a field with no cells.
  ---------------------------------------------------------------------[>]-*/
-Field::Field(int width, int height) : width(width), height(height), cells(height, std::vector<Cell>(width)) {
-    for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
+Field::Field() {
+    width = 0;
+    height = 0;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+    Function: init
+    Synopsis: Initializes the field with given width and height.
+ ---------------------------------------------------------------------[>]-*/
+void Field::init(int w, int h) {
+    if (w <= 0 || h <= 0) {
+        throw std::invalid_argument("Width and height must be positive integers.");
+    }
+    width = w;
+    height = h;
+    cells.resize(height, std::vector<Cell>(width));
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x){
             cells[y][x] = Cell(x, y);
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_initialized
+ Synopsis: Checks if the field is initialized with valid dimensions and cells.
+ ---------------------------------------------------------------------[>]-*/
+bool Field::is_initialized() const {
+    return width > 0 && height > 0 && static_cast<int>(cells.size()) == width * height;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -26,6 +51,9 @@ Field::Field(int width, int height) : width(width), height(height), cells(height
  Synopsis: Returns a copy of the cell at (x, y).
  ---------------------------------------------------------------------[>]-*/
 Cell& Field::get_cell(int x, int y) {
+    if (!in_bounds(x, y)) {
+        throw std::out_of_range("coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
+    }
     return cells[y][x];
 }
 
@@ -36,6 +64,9 @@ Cell& Field::get_cell(int x, int y) {
 void Field::set_cell(const Cell& cell) {
     int x = cell.get_x();
     int y = cell.get_y();
+    if (!in_bounds(x, y)) {
+        throw std::out_of_range("coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
+    }
     cells[y][x] = cell;
 }
 
@@ -46,7 +77,14 @@ void Field::set_cell(const Cell& cell) {
 void Field::set_cell_type(const Cell& cell, CellType type) {
     int x = cell.get_x();
     int y = cell.get_y();
-    cells[y][x].set_type(type);
+    if (!in_bounds(x, y)) {
+        throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
+    }
+    try {
+        cells[y][x].set_type(type);
+    } catch (const std::invalid_argument& e) {
+        throw std::invalid_argument("Error setting cell: " + std::string(e.what()));
+    }
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -117,7 +155,8 @@ void Field::reset() {
  Synopsis: Returns a deep copy of the field.
  ---------------------------------------------------------------------[>]-*/
 Field Field::clone() const {
-    Field copy(width, height);
+    Field copy;
+    copy.init(width, height);
     copy.cells = cells;
     return copy;
 }

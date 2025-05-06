@@ -17,7 +17,7 @@
 #include <functional>
 
 namespace ui {
-    void print_field_with_rules(const std::function<void()>& print_field_func);
+    void print_rules();
     void print_centered(const std::wstring& text);
     void print_separator();
     void sleep_for_seconds(int seconds);
