@@ -6,7 +6,7 @@
  Written: 2025-04-30
  Revised: 2025-05-05
  Description: Implementation of the Field class for managing puzzle grid,
-              including access, validation, and utility methods.
+          including access, validation, and utility methods.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/field.h"
@@ -43,7 +43,7 @@ void Field::init(int w, int h) {
  Synopsis: Checks if the field is initialized with valid dimensions and cells.
  ---------------------------------------------------------------------[>]-*/
 bool Field::is_initialized() const {
-    return width > 0 && height > 0 && static_cast<int>(cells.size()) == width * height;
+    return width > 0 && height > 0;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -52,7 +52,7 @@ bool Field::is_initialized() const {
  ---------------------------------------------------------------------[>]-*/
 Cell& Field::get_cell(int x, int y) {
     if (!in_bounds(x, y)) {
-        throw std::out_of_range("coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
+        throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
     }
     return cells[y][x];
 }
@@ -65,7 +65,7 @@ void Field::set_cell(const Cell& cell) {
     int x = cell.get_x();
     int y = cell.get_y();
     if (!in_bounds(x, y)) {
-        throw std::out_of_range("coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
+        throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
     }
     cells[y][x] = cell;
 }
@@ -92,9 +92,11 @@ void Field::set_cell_type(const Cell& cell, CellType type) {
  Synopsis: Resets directions of all cells in the field.
  ---------------------------------------------------------------------[>]-*/
 void Field::reset_all_dirs() {
-    for (auto& row : cells)
-        for (auto& cell : row)
+    for (auto& row : cells) {
+        for (auto& cell : row) {
             cell.reset_dirs();
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -102,9 +104,11 @@ void Field::reset_all_dirs() {
  Synopsis: Resets visited status of all cells.
  ---------------------------------------------------------------------[>]-*/
 void Field::reset_all_visited() {
-    for (auto& row : cells)
-        for (auto& cell : row)
+    for (auto& row : cells) {
+        for (auto& cell : row) {
             cell.set_visited(false);
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -194,30 +198,56 @@ std::vector<Direction> Field::available_directions(int x, int y) const {
  Synopsis: Prints the grid, showing all cell types.
  ---------------------------------------------------------------------[>]-*/
 void Field::print_field() const {
+    if (!is_initialized()) {
+        std::wcerr << L"Field is not initialized." << std::endl;
+        return;
+    }
+
     int rows = get_height();
     int cols = get_width();
 
-    auto print_horizontal = [&](wchar_t left, wchar_t middle, wchar_t right) {
-        std::wcout << left;
-        for (int x = 0; x < cols; ++x) {
-            std::wcout << L"───";
-            if (x != cols - 1) std::wcout << middle;
-        }
-        std::wcout << right << std::endl;
-    };
-
-    print_horizontal(L'┌', L'┬', L'┐');
+    std::wcout << L'┌';
+    for (int x = 0; x < cols - 1; ++x)
+        std::wcout << L"───┬";
+    std::wcout << L"───┐\n";
 
     for (int y = 0; y < rows; ++y) {
-        std::wcout << L"│";
+        std::wcout << L'│';
         for (int x = 0; x < cols; ++x) {
-            std::wcout << L' ' << cells[y][x].get_symbol() << L' ' << L"│";
-        }
-        std::wcout << L"\n";
+            const Cell& cell = cells[y][x];
 
-        if (y != rows - 1)
-            print_horizontal(L'├', L'┼', L'┤');
-        else
-            print_horizontal(L'└', L'┴', L'┘');
+            wchar_t symbol = cell.get_symbol();
+
+            wchar_t right_border = L'│';
+            if (cell.get_exit_dir() == Direction::RIGHT || cell.get_entry_dir() == Direction::RIGHT) {
+                right_border = L'┼';
+            }
+
+            std::wcout << L' ' << symbol << L' ' << right_border;
+        }
+        std::wcout << L'\n';
+
+        if (y != rows - 1) {
+            std::wcout << L'├';
+            for (int x = 0; x < cols; ++x) {
+                const Cell& cell = cells[y][x];
+
+                if (cell.get_exit_dir() == Direction::DOWN || cell.get_entry_dir() == Direction::DOWN) {
+                    std::wcout << L"─┼─";
+                } else {
+                    std::wcout << L"───";
+                }
+
+                if (x != cols - 1) {
+                    std::wcout << L'┼';
+                }
+            }
+            std::wcout << L'┤' << std::endl;
+        }
     }
+
+    std::wcout << L'└';
+    for (int x = 0; x < cols - 1; ++x)
+        std::wcout << L"───┴";
+    std::wcout << L"───┘\n";
 }

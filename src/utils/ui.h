@@ -15,11 +15,17 @@
 #include <thread>
 #include <chrono>
 #include <functional>
+#include <regex>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 namespace ui {
-    void print_rules();
+    void print_rules(int field_lines);
     void print_centered(const std::wstring& text);
-    void print_separator();
+    void print_centered_title(const std::wstring& text);
+    void print_separator_half();
+    void print_separator_full();
     void sleep_for_seconds(int seconds);
-    int get_lines_printed();
+    int get_terminal_width();
+    int get_terminal_height();
 }

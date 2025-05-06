@@ -18,7 +18,7 @@
 
 int main() {
     setlocale(LC_ALL, "en_US.UTF-8");
-    ui::print_centered(L"Welcome to Masyu Puzzle Solver!");
+    ui::print_centered_title(L"Welcome to Masyu Puzzle Solver!");
     ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]-
@@ -26,18 +26,17 @@ int main() {
     10x10 field with no initial cells set.
  ---------------------------------------------------------------------[>]*/
     ui::print_centered(L"Field 1: Empty field");
-    ui::sleep_for_seconds(2);
 
     Field field_1;
 
     try {
         field_1.init(10, 10);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 1: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 1: " << e.what() << std::endl;
     }
 
     field_1.print_field();
-    ui::print_rules();
+    ui::print_rules(field_1.get_height());
 
     /*
     try {
@@ -56,7 +55,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 2 (Task from example):
@@ -65,14 +64,13 @@ int main() {
     7 black dots and 13 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 2 (Task from example)");
-    ui::sleep_for_seconds(2);
 
     Field field_2;
 
     try {
         field_2.init(10, 10);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 2: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 2: " << e.what() << std::endl;
     }
 
     try {
@@ -104,7 +102,7 @@ int main() {
     }
 
     field_2.print_field();
-    ui::print_rules();
+    ui::print_rules(field_2.get_height());
 
     /*
     try {
@@ -123,7 +121,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 3 (Task 1):    
@@ -132,14 +130,13 @@ int main() {
     18 black dots and 10 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 3: Task 1");
-    ui::sleep_for_seconds(2);
 
     Field field_3;
 
     try {
         field_3.init(11, 11);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 3: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 3: " << e.what() << std::endl;
     }
 
     try {
@@ -179,7 +176,7 @@ int main() {
     }
 
     field_3.print_field();
-    ui::print_rules();
+    ui::print_rules(field_3.get_height());
 
     /*
     try {
@@ -198,7 +195,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 4 (Task 2):
@@ -207,14 +204,13 @@ int main() {
     9 black dots and 24 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 4: Task 2");
-    ui::sleep_for_seconds(2);
 
     Field field_4;
 
     try {
         field_4.init(10, 10);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 4: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 4: " << e.what() << std::endl;
     }
 
     try {
@@ -259,7 +255,7 @@ int main() {
     }
 
     field_4.print_field();
-    ui::print_rules();
+    ui::print_rules(field_4.get_height());
 
     /*
     try {
@@ -278,7 +274,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 5 (Task 3):
@@ -287,13 +283,12 @@ int main() {
     8 black dots and 20 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 5: Task 3");
-    ui::sleep_for_seconds(2);    
 
     Field field_5;
     try {
         field_5.init(12, 9);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 5: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 5: " << e.what() << std::endl;
     }
 
     try {
@@ -333,7 +328,7 @@ int main() {
     }
 
     field_5.print_field();
-    ui::print_rules();
+    ui::print_rules(field_5.get_height());
 
     /*
     try {
@@ -352,7 +347,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 6:
@@ -361,13 +356,12 @@ int main() {
     15 black dots and 27 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 6: Task 4");
-    ui::sleep_for_seconds(2);
 
     Field field_6;
     try {
         field_6.init(13, 13);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 6: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 6: " << e.what() << std::endl;
     }
 
     try {
@@ -421,7 +415,7 @@ int main() {
     }
 
     field_6.print_field();
-    ui::print_rules();
+    ui::print_rules(field_6.get_height());
 
     /*
     try {
@@ -440,7 +434,7 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 7:
@@ -449,13 +443,12 @@ int main() {
     36 black dots and 36 white dots are set.
 ---------------------------------------------------------------------[>]-*/
     ui::print_centered(L"Field 7: Task 5");
-    ui::sleep_for_seconds(2);
 
     Field field_7;
     try {
         field_7.init(17, 17);
     } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error creating field 7: " << e.what() << std::endl;
+        std::wcerr << L"Error initialization field 7: " << e.what() << std::endl;
     }
 
     try {
@@ -539,7 +532,7 @@ int main() {
     }
 
     field_7.print_field();
-    ui::print_rules();
+    ui::print_rules(field_7.get_height());
 
     /*
     try {
@@ -558,15 +551,16 @@ int main() {
     }
     */
 
-    ui::sleep_for_seconds(3);
+    ui::sleep_for_seconds(2);
 
 /* ---------------------------------------------------------------------[<]- 
     End of program:
     Print exit message and wait for a few seconds before exiting.   
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"End of Masyu Puzzle Solver");
-    ui::print_centered(L"Exiting...");
+    ui::print_centered_title(L"End of Masyu Puzzle Solver");
     ui::sleep_for_seconds(2);
+    ui::print_centered_title(L"Exiting...");
+    ui::sleep_for_seconds(1);
 
     return 0;
 }
