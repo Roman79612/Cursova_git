@@ -4,11 +4,13 @@
   Group: TV-42
   Student: Kriuchkov R. Y.
   Written: 2025-05-05
-  Revised: 2025-05-05
+  Revised: 2025-05-06
   Description: This file contains utility functions for console output, including moving the cursor, clearing the console, and printing formatted text.
  ------------------------------------------------------------------</Header>-*/
 
-#pragma once
+#ifndef UI_H
+#define UI_H
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -29,3 +31,5 @@ namespace ui {
     int get_terminal_width();
     int get_terminal_height();
 }
+
+#endif // UI_H

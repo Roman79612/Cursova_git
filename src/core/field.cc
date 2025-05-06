@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-05
+ Revised: 2025-05-06
  Description: Implementation of the Field class for managing puzzle grid,
           including access, validation, and utility methods.
  ------------------------------------------------------------------</Header>-*/
@@ -30,6 +30,8 @@ void Field::init(int w, int h) {
     }
     width = w;
     height = h;
+    white_count = 0;
+    black_count = 0;
     cells.resize(height, std::vector<Cell>(width));
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x){
@@ -68,6 +70,8 @@ void Field::set_cell(const Cell& cell) {
         throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
     }
     cells[y][x] = cell;
+    white_count = has_white_cell();
+    black_count = has_black_cell();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -146,6 +150,21 @@ int Field::get_height() const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
+ Function: get_white_count
+ Synopsis: Returns the number of white cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+int Field::get_white_count() const {
+    return white_count;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_black_count
+ Synopsis: Returns the number of black cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+int Field::get_black_count() const {
+    return black_count;
+}
+/* ---------------------------------------------------------------------[<]- 
  Function: reset
  Synopsis: Resets all visited flags and directions in the field.
  ---------------------------------------------------------------------[>]-*/
@@ -194,6 +213,70 @@ std::vector<Direction> Field::available_directions(int x, int y) const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
+ Function: has_white_cell
+ Synopsis: Checks if there are any white cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+bool Field::has_white_cell() {
+    white_count = 0;
+    for (const auto& row : cells) {
+        for (const auto& cell : row) {
+            if (cell.get_type() == CellType::WHITE) {
+                ++white_count;
+            }
+        }
+    }
+    return white_count > 0;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: has_black_cell
+ Synopsis: Checks if there are any black cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+bool Field::has_black_cell() {
+    black_count = 0;
+    for (const auto& row : cells) {
+        for (const auto& cell : row) {
+            if (cell.get_type() == CellType::BLACK) {
+                ++black_count;
+            }
+        }
+    }
+    return black_count > 0; 
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_white_cells
+ Synopsis: Returns coordinates of all white cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Cell*> Field::get_white_cells() {
+    std::vector<Cell*> white_cells;
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            if (cell.get_type() == CellType::WHITE) {
+                white_cells.push_back(&cell);
+            }
+        }
+    }
+    return white_cells;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_black_cells
+ Synopsis: Returns coordinates of all black cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Cell*> Field::get_black_cells() {
+    std::vector<Cell*> black_cells;
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            if (cell.get_type() == CellType::BLACK) {
+                black_cells.push_back(&cell);
+            }
+        }
+    }
+    return black_cells;
+}
+
+/* ---------------------------------------------------------------------[<]- 
  Function: Field::print_field
  Synopsis: Prints the grid, showing all cell types.
  ---------------------------------------------------------------------[>]-*/
@@ -203,51 +286,118 @@ void Field::print_field() const {
         return;
     }
 
-    int rows = get_height();
-    int cols = get_width();
+    print_top_border();
 
-    std::wcout << L'┌';
-    for (int x = 0; x < cols - 1; ++x)
-        std::wcout << L"───┬";
-    std::wcout << L"───┐\n";
-
-    for (int y = 0; y < rows; ++y) {
-        std::wcout << L'│';
-        for (int x = 0; x < cols; ++x) {
-            const Cell& cell = cells[y][x];
-
-            wchar_t symbol = cell.get_symbol();
-
-            wchar_t right_border = L'│';
-            if (cell.get_exit_dir() == Direction::RIGHT || cell.get_entry_dir() == Direction::RIGHT) {
-                right_border = L'┼';
-            }
-
-            std::wcout << L' ' << symbol << L' ' << right_border;
-        }
-        std::wcout << L'\n';
-
-        if (y != rows - 1) {
-            std::wcout << L'├';
-            for (int x = 0; x < cols; ++x) {
-                const Cell& cell = cells[y][x];
-
-                if (cell.get_exit_dir() == Direction::DOWN || cell.get_entry_dir() == Direction::DOWN) {
-                    std::wcout << L"─┼─";
-                } else {
-                    std::wcout << L"───";
-                }
-
-                if (x != cols - 1) {
-                    std::wcout << L'┼';
-                }
-            }
-            std::wcout << L'┤' << std::endl;
+    for (int y = 0; y < get_height(); ++y) {
+        print_row_cells(y);
+        if (y != get_height() - 1) {
+            print_row_separator(y);
         }
     }
 
+    print_bottom_border();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: print_top_border
+ Synopsis: Prints the top border of the field.
+ ---------------------------------------------------------------------[>]-*/
+void Field::print_top_border() const {
+    std::wcout << L'┌';
+    for (int x = 0; x < get_width() - 1; ++x)
+        std::wcout << L"───┬";
+    std::wcout << L"───┐\n";
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: print_row_cells
+ Synopsis: Prints the cells in a row with their symbols and borders.
+ ---------------------------------------------------------------------[>]-*/
+void Field::print_row_cells(int y) const {
+    std::wcout << L'│';
+    int max_x = get_width();
+    for (int x = 0; x < max_x; ++x) {
+        const Cell& cell = cells[y][x];
+        CellType type = cell.get_type();
+        Direction in = cell.get_entry_dir();
+        Direction out = cell.get_exit_dir();
+        wchar_t symbol = cell.get_symbol();
+
+        bool dir_left  = (in == Direction::LEFT || out == Direction::LEFT);
+        bool dir_right = (in == Direction::RIGHT || out == Direction::RIGHT);
+        bool is_dot = (type == CellType::WHITE || type == CellType::BLACK);
+
+        if (cell.is_line()) {
+            if (dir_left) {
+                std::wcout << L"\b\x1b[32m" << L'┼' << L" " << symbol << L" \x1b[0m" << L"│";
+            } else if (dir_right) {
+                std::wcout << L"\x1b[32m " << symbol << L" " << L"┼\x1b[0m";
+            } else {
+                std::wcout << L"\x1b[32m " << symbol << L" \x1b[0m" << L"│";
+            }
+        } else if (is_dot) {
+            if (dir_left) {
+                std::wcout << L"\b\x1b[32m" << L'┼' << L" \x1b[0m" << symbol << L" " << L"│";
+            } else if (dir_right) {
+                std::wcout << L"\x1b[0m " << symbol << L" " << L"\x1b[32m┼\x1b[0m";
+            } else {
+                std::wcout << L" " << symbol << L" " << L"│";
+            }
+        } else {
+            if (dir_left) {
+                std::wcout << L"\b\x1b[32m" << L'┼' << L" \x1b[0m" << symbol << L" " << L"│";
+            } else if (dir_right) {
+                std::wcout << L"\x1b[0m " << symbol << L" " << L"\x1b[32m┼\x1b[0m";
+            } else {
+                std::wcout << L" " << symbol << L" " << L"│";
+            }
+        }
+    }
+    std::wcout << L'\n';
+}
+
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: print_row_separator
+ Synopsis: Prints the separator between rows.
+ ---------------------------------------------------------------------[>]-*/
+void Field::print_row_separator(int y) const {
+    std::wcout << L'├';
+    for (int x = 0; x < get_width(); ++x) {
+        const Cell& cell = cells[y][x];
+        Direction in = cell.get_entry_dir();
+        Direction out = cell.get_exit_dir();
+
+        bool dir_up = (in == Direction::UP || out == Direction::UP);
+        bool dir_down = (in == Direction::DOWN || out == Direction::DOWN);
+
+        if (dir_up && dir_down) {
+            std::wcout << L"\x1b[2A\x1b[3C\b\b\b─\x1b[32m┼\x1b[0m─\x1b[3D\x1b[2B";
+            std::wcout << L"─\x1b[32m┼\x1b[0m─";
+        } else if (dir_up) {
+            std::wcout << L"\x1b[2A\x1b[3C\b\b\b─\x1b[32m┼\x1b[0m─\x1b[3D\x1b[2B";
+            std::wcout << L"───";
+        } else if (dir_down) {
+            std::wcout << L"─\x1b[32m┼\x1b[0m─";
+        } else {
+            std::wcout << L"───";
+        }
+
+
+        if (x != get_width() - 1) {
+            std::wcout << L'┼';
+        }
+    }
+    std::wcout << L'┤' << std::endl;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: print_bottom_border
+ Synopsis: Prints the bottom border of the field.
+ ---------------------------------------------------------------------[>]-*/
+void Field::print_bottom_border() const {
     std::wcout << L'└';
-    for (int x = 0; x < cols - 1; ++x)
+    for (int x = 0; x < get_width() - 1; ++x)
         std::wcout << L"───┴";
     std::wcout << L"───┘\n";
 }

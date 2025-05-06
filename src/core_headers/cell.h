@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-05
+ Revised: 2025-05-06
  Description: Header for representing a cell in the puzzle grid.
  ------------------------------------------------------------------</Header>-*/
 
@@ -59,6 +59,10 @@ public:
     void set_symbol();
     wchar_t get_symbol() const;
     bool is_valid_type(CellType type) const;
+    bool is_black() const;
+    bool is_white() const;
+    bool is_line() const;
+    bool is_empty() const;
 };
 
 #endif // CELL_H

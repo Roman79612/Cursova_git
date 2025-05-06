@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-05-03
- Revised: 2025-05-05
+ Revised: 2025-05-06
  Description: Main program to test the Masyu puzzle solver functionality.
  ------------------------------------------------------------------</Header>-*/
 
@@ -37,25 +37,24 @@ int main() {
 
     field_1.print_field();
     ui::print_rules(field_1.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_1.is_initialized()) {
             Solver solver_1(field_1);
             if (solver_1.solve()) {
                 ui::print_centered(L"Solution for Field 1 is found:");
                 field_1.print_field();
-                ui::print_rules();
+                ui::print_rules(field_1.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 1");
+                ui::print_centered_title(L"No solution found for Field 1");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 1: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 2 (Task from example):
@@ -103,25 +102,24 @@ int main() {
 
     field_2.print_field();
     ui::print_rules(field_2.get_height());
-
-    /*
+    ui::sleep_for_seconds(2);
+    
     try {
         if (field_2.is_initialized()) {
             Solver solver_2(field_2);
             if (solver_2.solve()) {
                 ui::print_centered(L"Solution for Field 2 is found:");
                 field_2.print_field();
-                ui::print_rules();
+                ui::print_rules(field_2.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 2");
+                ui::print_centered_title(L"No solution found for Field 2");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 2: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 3 (Task 1):    
@@ -177,25 +175,24 @@ int main() {
 
     field_3.print_field();
     ui::print_rules(field_3.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_3.is_initialized()) {
             Solver solver_3(field_3);
             if (solver_3.solve()) {
                 ui::print_centered(L"Solution for Field 3 is found:");
                 field_3.print_field();
-                ui::print_rules();
+                ui::print_rules(field_3.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 3");
+                ui::print_centered_title(L"No solution found for Field 3");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 3: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 4 (Task 2):
@@ -256,25 +253,24 @@ int main() {
 
     field_4.print_field();
     ui::print_rules(field_4.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_4.is_initialized()) {
             Solver solver_4(field_4);
             if (solver_4.solve()) {
                 ui::print_centered(L"Solution for Field 4 is found:");
                 field_4.print_field();
-                ui::print_rules();
+                ui::print_rules(field_4.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 4");
+                ui::print_centered_title(L"No solution found for Field 4");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 4: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 5 (Task 3):
@@ -329,25 +325,24 @@ int main() {
 
     field_5.print_field();
     ui::print_rules(field_5.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_5.is_initialized()) {
             Solver solver_5(field_5);
             if (solver_5.solve()) {
                 ui::print_centered(L"Solution for Field 5 is found:");
                 field_5.print_field();
-                ui::print_rules();
+                ui::print_rules(field_5.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 5");
+                ui::print_centered_title(L"No solution found for Field 5");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 5: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     Field 6:
@@ -416,23 +411,22 @@ int main() {
 
     field_6.print_field();
     ui::print_rules(field_6.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_6.is_initialized()) {
             Solver solver_6(field_6);
             if (solver_6.solve()) {
                 ui::print_centered(L"Solution for Field 6 is found:");
                 field_6.print_field();
-                ui::print_rules();
+                ui::print_rules(field_6.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 6");
+                ui::print_centered_title(L"No solution found for Field 6");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 6: " << e.what() << std::endl;
     }
-    */
 
     ui::sleep_for_seconds(2);
 
@@ -533,25 +527,24 @@ int main() {
 
     field_7.print_field();
     ui::print_rules(field_7.get_height());
+    ui::sleep_for_seconds(2);
 
-    /*
     try {
         if (field_7.is_initialized()) {
             Solver solver_7(field_7);
             if (solver_7.solve()) {
                 ui::print_centered(L"Solution for Field 7 is found:");
                 field_7.print_field();
-                ui::print_rules();
+                ui::print_rules(field_7.get_height());
             } else {
-                ui::print_centered(L"No solution found for Field 7");
+                ui::print_centered_title(L"No solution found for Field 7");
             }
         }
     } catch (const std::exception& e) {
         std::wcerr << L"Error solving field 7: " << e.what() << std::endl;
     }
-    */
 
-    ui::sleep_for_seconds(2);
+    ui::sleep_for_seconds(4);
 
 /* ---------------------------------------------------------------------[<]- 
     End of program:

@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-05
+ Revised: 2025-05-06
  Description: Implementation of the Cell class for handling puzzle grid cells,
               including handling directions and cell states.
  ------------------------------------------------------------------</Header>-*/
@@ -102,10 +102,11 @@ bool Cell::is_visited() const {
 void Cell::set_type(CellType new_type) {
     if (!is_valid_type(new_type)) {
         throw std::invalid_argument("Invalid cell type" + std::to_string(static_cast<int>(new_type)));
-    } else {
+    }
+    if (type == CellType::EMPTY) {
         type = new_type;
         set_symbol();
-    }
+    } 
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -122,10 +123,6 @@ void Cell::set_visited(bool state) {
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_entry_dir(Direction dir) {
     if (DirectionHelper::is_valid_direction(dir)) {
-        if (exit_dir == dir && dir != Direction::NONE) {
-            entry_dir = Direction::NONE;
-            exit_dir = Direction::NONE;
-        }
         entry_dir = dir;
     } else {
         throw std::invalid_argument("Invalid direction for entry_dir" + std::to_string(static_cast<int>(dir)));
@@ -139,10 +136,6 @@ void Cell::set_entry_dir(Direction dir) {
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_exit_dir(Direction dir) {
     if (DirectionHelper::is_valid_direction(dir)) {
-        if (entry_dir == dir && dir != Direction::NONE) {
-            entry_dir = Direction::NONE;
-            exit_dir = Direction::NONE;
-        }
         exit_dir = dir;
     } else {
         throw std::invalid_argument("Invalid direction for exit_dir" + std::to_string(static_cast<int>(dir)));
@@ -209,22 +202,22 @@ wchar_t Cell::get_symbol() const {
 
         if ((entry_dir == Direction::UP && exit_dir == Direction::RIGHT) ||
             (entry_dir == Direction::RIGHT && exit_dir == Direction::UP)) {
-            return L'┐';
+            return L'└';
         }
 
         if ((entry_dir == Direction::UP && exit_dir == Direction::LEFT) ||
             (entry_dir == Direction::LEFT && exit_dir == Direction::UP)) {
-            return L'┌';
+            return L'┘';
         }
 
         if ((entry_dir == Direction::DOWN && exit_dir == Direction::RIGHT) ||
             (entry_dir == Direction::RIGHT && exit_dir == Direction::DOWN)) {
-            return L'┘';
+            return L'┌';
         }
 
         if ((entry_dir == Direction::DOWN && exit_dir == Direction::LEFT) ||
             (entry_dir == Direction::LEFT && exit_dir == Direction::DOWN)) {
-            return L'└';
+            return L'┐';
         }
         return L'?';
 
@@ -241,4 +234,36 @@ wchar_t Cell::get_symbol() const {
 
 bool Cell::is_valid_type(CellType type) const {
     return type == CellType::EMPTY || type == CellType::BLACK || type == CellType::WHITE || type == CellType::LINE;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_black
+ Synopsis: Check if the cell is black.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_black() const {
+    return type == CellType::BLACK;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_white
+ Synopsis: Check if the cell is white.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_white() const {
+    return type == CellType::WHITE;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_line
+ Synopsis: Check if the cell is a line.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_line() const {
+    return type == CellType::LINE;  
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_empty
+ Synopsis: Check if the cell is empty.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_empty() const {
+    return type == CellType::EMPTY;
 }
