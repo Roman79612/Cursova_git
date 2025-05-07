@@ -21,7 +21,7 @@
     Function: print_rules
     Synopsis: Prints the rules of the game in a formatted box.
 -------------------------------------------------------------------------[>]*/
-void ui::print_rules(int field_lines) {
+void ui::print_rules(int field_height) {
     const std::vector<std::wstring> rules_box = {
         L"\x1b[32m╔════════════════════════════════════════════════════════╗",
         L"\x1b[32m║ \x1b[31m                     MASYU RULES:                      \x1b[32m║",
@@ -35,39 +35,35 @@ void ui::print_rules(int field_lines) {
         L"\x1b[32m╚════════════════════════════════════════════════════════╝\x1b[0m"
     };
 
-    int top_indent = (field_lines + 2) * 2;
-    int right_indent = ui::get_terminal_width() - 58;
+    int top_indent = field_height * 2 + HEIGHT_TITLE;
+    int right_indent = ui::get_terminal_width() - WIDTH_RULES_BOX;
+    int bottom_indent = top_indent - HEIGHT_RULES_BOX;
 
-    std::wcout << L"\x1b[" << top_indent << L"A";
+    ui::move_cursor_up(top_indent);
 
     for (const auto& line : rules_box) {
-        std::wcout << L"\x1b[" << right_indent << L"C" << line << std::endl;
+        ui::move_cursor_right(right_indent);
+        std::wcout << line << std::endl;
     }
 
-    int bottom_indent = top_indent - 10;
-    std::wcout << L"\x1b[" << bottom_indent << L"B";
+    ui::move_cursor_down(bottom_indent);
 }
 
 /* ----------------------------------------------------------------------[<]-
     Function: print_centered
     Synopsis: Prints a centered text in the terminal. (half-width)
 -------------------------------------------------------------------------[>]*/
-void ui::print_centered(const std::wstring& text) {
+void ui::print_centered_title_half(const std::wstring& text) {
     int terminal_height = ui::get_terminal_height();
-    for (int i = 0; i < terminal_height; ++i) {
-        std::wcout << std::endl;
-    }
-
-    std::wcout << L"\x1b[" << terminal_height << L"A";
-    ui::print_separator_half();
-
     int terminal_width = ui::get_terminal_width();
-    const int total_width = terminal_width / 2;
+    int total_width = terminal_width / 2;
     int padding = (total_width - static_cast<int>(text.size())) / 2;
     if (padding < 0) padding = 0;
 
-    std::wcout << L"\x1b[31m" << std::wstring(padding, L' ') << text << L"\x1b[0m" << std::endl;
-
+    ui::print_new_line(terminal_height);
+    ui::move_cursor_up(terminal_height);
+    ui::print_separator_half();
+    std::wcout << std::wstring(padding, L' ') << RED << text << RESET_COLOUR << std::endl;
     ui::print_separator_half();
 }
 
@@ -77,20 +73,15 @@ void ui::print_centered(const std::wstring& text) {
 -------------------------------------------------------------------------[>]*/
 void ui::print_centered_title(const std::wstring& text) {
     int terminal_height = ui::get_terminal_height();
-    for (int i = 0; i < terminal_height; ++i) {
-        std::wcout << std::endl;
-    }
-
-    std::wcout << L"\x1b[" << terminal_height << L"A";
-    ui::print_separator_full();
-
     int terminal_width = ui::get_terminal_width();
-    const int total_width = terminal_width;
+    int total_width = terminal_width;
     int padding = (total_width - static_cast<int>(text.size())) / 2;
     if (padding < 0) padding = 0;
 
-    std::wcout << L"\x1b[31m" << std::wstring(padding, L' ') << text << L"\x1b[0m" << std::endl;
-
+    ui::print_new_line(terminal_height);
+    ui::move_cursor_up(terminal_height);
+    ui::print_separator_full();
+    std::wcout << std::wstring(padding, L' ') << RED << text << RESET_COLOUR << std::endl;
     ui::print_separator_full();
 }
 
@@ -100,8 +91,8 @@ void ui::print_centered_title(const std::wstring& text) {
 -------------------------------------------------------------------------[>]*/
 void ui::print_separator_half() {
     int terminal_width = ui::get_terminal_width();
-    const int total_width = terminal_width / 2;
-    std::wcout << L"\x1b[32m" << std::wstring(total_width, L'═') << L"\x1b[0m" << std::endl;
+    int total_width = terminal_width / 2;
+    std::wcout << GREEN << std::wstring(total_width, L'═') << RESET_COLOUR << std::endl;
 }
 
 /* ----------------------------------------------------------------------[<]-
@@ -111,7 +102,7 @@ void ui::print_separator_half() {
 void ui::print_separator_full() {
     int terminal_width = ui::get_terminal_width();
     const int total_width = terminal_width;
-    std::wcout << L"\x1b[32m" << std::wstring(total_width, L'═') << L"\x1b[0m" << std::endl;
+    std::wcout << GREEN << std::wstring(total_width, L'═') << RESET_COLOUR << std::endl;
 }
 
 /* ----------------------------------------------------------------------[<]-
@@ -140,4 +131,65 @@ int ui::get_terminal_height() {
     struct winsize w;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
     return w.ws_row;
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: move_cursor_up
+    Synopsis: Moves the cursor up by the specified number of lines.
+-------------------------------------------------------------------------[>]*/
+void ui::move_cursor_up(int lines) {
+    std::wcout << "\x1b[" << lines << "A";
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: move_cursor_down
+    Synopsis: Moves the cursor down by the specified number of lines.
+-------------------------------------------------------------------------[>]*/
+void ui::move_cursor_down(int lines) {
+    std::wcout << "\x1b[" << lines << "B";
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: move_cursor_left
+    Synopsis: Moves the cursor left by the specified number of columns.
+-------------------------------------------------------------------------[>]*/
+void ui::move_cursor_left(int cols) {
+    std::wcout << "\x1b[" << cols << "D";
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: move_cursor_right
+    Synopsis: Moves the cursor right by the specified number of columns.
+-------------------------------------------------------------------------[>]*/
+void ui::move_cursor_right(int cols) {
+    std::wcout << "\x1b[" << cols << "C";
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: move_cursor_home
+    Synopsis: Moves the cursor to the home position (top-left corner).
+-------------------------------------------------------------------------[>]*/
+void ui::move_cursor_end() {
+    std::wcout << "\x1b[999C";
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: print_new_line
+    Synopsis: Prints the specified number of new lines.
+-------------------------------------------------------------------------[>]*/
+void ui::print_new_line(int lines) {
+    for (int i = 0; i < lines; ++i) {
+        std::wcout << std::endl;
+    }
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: backspace
+    Synopsis: Moves the cursor back by the specified number of lines.
+-------------------------------------------------------------------------[>]*/
+void ui::backspace(int lines) {
+    for (int i = 0; i < lines; ++i) {
+        std::wcout << L"\x1b[1D" << L' ' << L"\x1b[1D";
+    }
+    std::wcout.flush();
 }

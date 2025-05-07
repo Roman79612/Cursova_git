@@ -21,15 +21,35 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#define WIDTH_RULES_BOX 58
+#define HEIGHT_RULES_BOX 10
+#define HEIGHT_TITLE 4
+
+#define RESET_COLOUR "\x1b[0m"
+#define GREEN "\x1b[32m"
+#define RED "\x1b[31m"
+#define BOLD "\x1b[1m"
+#define UNDERLINE "\x1b[4m"
+#define ITALIC "\x1b[3m"
+#define STRIKETHROUGH "\x1b[9m"
+#define BLINK "\x1b[5m"
+
 namespace ui {
-    void print_rules(int field_lines);
-    void print_centered(const std::wstring& text);
+    void print_rules(int field_height);
+    void print_centered_title_half(const std::wstring& text);
     void print_centered_title(const std::wstring& text);
     void print_separator_half();
     void print_separator_full();
     void sleep_for_seconds(int seconds);
     int get_terminal_width();
     int get_terminal_height();
+    void move_cursor_up(int lines);
+    void move_cursor_down(int lines);
+    void move_cursor_left(int columns);
+    void move_cursor_right(int columns);
+    void move_cursor_end();
+    void print_new_line(int lines);
+    void backspace(int lines);
 }
 
 #endif // UI_H

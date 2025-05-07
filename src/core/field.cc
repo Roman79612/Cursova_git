@@ -329,25 +329,28 @@ void Field::print_row_cells(int y) const {
 
         if (cell.is_line()) {
             if (dir_left) {
-                std::wcout << L"\b\x1b[32m" << L'┼' << L" " << symbol << L" \x1b[0m" << L"│";
+                ui::backspace(1);
+                std::wcout << GREEN << L'┼' << L" " << symbol << L" " << RESET_COLOUR << L"│";
             } else if (dir_right) {
-                std::wcout << L"\x1b[32m " << symbol << L" " << L"┼\x1b[0m";
+                std::wcout << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
             } else {
-                std::wcout << L"\x1b[32m " << symbol << L" \x1b[0m" << L"│";
+                std::wcout << GREEN << L" " << symbol << L" " << RESET_COLOUR << L"│";
             }
         } else if (is_dot) {
             if (dir_left) {
-                std::wcout << L"\b\x1b[32m" << L'┼' << L" \x1b[0m" << symbol << L" " << L"│";
+                ui::backspace(1);
+                std::wcout << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│";
             } else if (dir_right) {
-                std::wcout << L"\x1b[0m " << symbol << L" " << L"\x1b[32m┼\x1b[0m";
+                std::wcout << RESET_COLOUR << L" " << symbol << L" " << GREEN << L"┼" << RESET_COLOUR;
             } else {
                 std::wcout << L" " << symbol << L" " << L"│";
             }
         } else {
             if (dir_left) {
-                std::wcout << L"\b\x1b[32m" << L'┼' << L" \x1b[0m" << symbol << L" " << L"│";
+                ui::backspace(1);
+                std::wcout << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│";
             } else if (dir_right) {
-                std::wcout << L"\x1b[0m " << symbol << L" " << L"\x1b[32m┼\x1b[0m";
+                std::wcout << RESET_COLOUR << L" " << symbol << L" " << GREEN << L"┼" << RESET_COLOUR;
             } else {
                 std::wcout << L" " << symbol << L" " << L"│";
             }
@@ -372,17 +375,26 @@ void Field::print_row_separator(int y) const {
         bool dir_down = (in == Direction::DOWN || out == Direction::DOWN);
 
         if (dir_up && dir_down) {
-            std::wcout << L"\x1b[2A\x1b[3C\b\b\b─\x1b[32m┼\x1b[0m─\x1b[3D\x1b[2B";
-            std::wcout << L"─\x1b[32m┼\x1b[0m─";
+            ui::move_cursor_up(2);
+            ui::move_cursor_right(3);
+            ui::move_cursor_left(3);
+            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            ui::move_cursor_down(2);
+            ui::move_cursor_left(3);
+            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
         } else if (dir_up) {
-            std::wcout << L"\x1b[2A\x1b[3C\b\b\b─\x1b[32m┼\x1b[0m─\x1b[3D\x1b[2B";
+            ui::move_cursor_up(2);
+            ui::move_cursor_right(3);
+            ui::move_cursor_left(3);
+            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            ui::move_cursor_down(2);
+            ui::move_cursor_left(3);
             std::wcout << L"───";
         } else if (dir_down) {
-            std::wcout << L"─\x1b[32m┼\x1b[0m─";
+            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
         } else {
             std::wcout << L"───";
         }
-
 
         if (x != get_width() - 1) {
             std::wcout << L'┼';

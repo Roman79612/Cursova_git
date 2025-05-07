@@ -18,6 +18,7 @@
 #include <string>
 #include "../core_headers/cell.h"
 #include "../core_headers/direction.h"
+#include "../utils/ui.h"
 
 class Field {
 public:

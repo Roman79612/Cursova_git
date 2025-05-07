@@ -25,7 +25,7 @@ int main() {
     Field 1:
     10x10 field with no initial cells set.
  ---------------------------------------------------------------------[>]*/
-    ui::print_centered(L"Field 1: Empty field");
+    ui::print_centered_title_half(L"Field 1: Empty field");
 
     Field field_1;
 
@@ -43,7 +43,7 @@ int main() {
         if (field_1.is_initialized()) {
             Solver solver_1(field_1);
             if (solver_1.solve()) {
-                ui::print_centered(L"Solution for Field 1 is found:");
+                ui::print_centered_title_half(L"Solution for Field 1 is found:");
                 field_1.print_field();
                 ui::print_rules(field_1.get_height());
             } else {
@@ -62,7 +62,7 @@ int main() {
     The task is to find a solution for this field.
     7 black dots and 13 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 2 (Task from example)");
+    ui::print_centered_title_half(L"Field 2 (Task from example)");
 
     Field field_2;
 
@@ -108,7 +108,7 @@ int main() {
         if (field_2.is_initialized()) {
             Solver solver_2(field_2);
             if (solver_2.solve()) {
-                ui::print_centered(L"Solution for Field 2 is found:");
+                ui::print_centered_title_half(L"Solution for Field 2 is found:");
                 field_2.print_field();
                 ui::print_rules(field_2.get_height());
             } else {
@@ -127,7 +127,7 @@ int main() {
     The task is to find a solution for this field.
     18 black dots and 10 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 3: Task 1");
+    ui::print_centered_title_half(L"Field 3: Task 1");
 
     Field field_3;
 
@@ -181,7 +181,7 @@ int main() {
         if (field_3.is_initialized()) {
             Solver solver_3(field_3);
             if (solver_3.solve()) {
-                ui::print_centered(L"Solution for Field 3 is found:");
+                ui::print_centered_title_half(L"Solution for Field 3 is found:");
                 field_3.print_field();
                 ui::print_rules(field_3.get_height());
             } else {
@@ -200,7 +200,7 @@ int main() {
     The task is to find a solution for this field.
     9 black dots and 24 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 4: Task 2");
+    ui::print_centered_title_half(L"Field 4: Task 2");
 
     Field field_4;
 
@@ -259,7 +259,7 @@ int main() {
         if (field_4.is_initialized()) {
             Solver solver_4(field_4);
             if (solver_4.solve()) {
-                ui::print_centered(L"Solution for Field 4 is found:");
+                ui::print_centered_title_half(L"Solution for Field 4 is found:");
                 field_4.print_field();
                 ui::print_rules(field_4.get_height());
             } else {
@@ -278,7 +278,7 @@ int main() {
     The task is to find a solution for this field.
     8 black dots and 20 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 5: Task 3");
+    ui::print_centered_title_half(L"Field 5: Task 3");
 
     Field field_5;
     try {
@@ -331,7 +331,7 @@ int main() {
         if (field_5.is_initialized()) {
             Solver solver_5(field_5);
             if (solver_5.solve()) {
-                ui::print_centered(L"Solution for Field 5 is found:");
+                ui::print_centered_title_half(L"Solution for Field 5 is found:");
                 field_5.print_field();
                 ui::print_rules(field_5.get_height());
             } else {
@@ -350,7 +350,7 @@ int main() {
     The task is to find a solution for this field.
     15 black dots and 27 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 6: Task 4");
+    ui::print_centered_title_half(L"Field 6: Task 4");
 
     Field field_6;
     try {
@@ -417,7 +417,7 @@ int main() {
         if (field_6.is_initialized()) {
             Solver solver_6(field_6);
             if (solver_6.solve()) {
-                ui::print_centered(L"Solution for Field 6 is found:");
+                ui::print_centered_title_half(L"Solution for Field 6 is found:");
                 field_6.print_field();
                 ui::print_rules(field_6.get_height());
             } else {
@@ -436,7 +436,7 @@ int main() {
     The task is to find a solution for this field.
     36 black dots and 36 white dots are set.
 ---------------------------------------------------------------------[>]-*/
-    ui::print_centered(L"Field 7: Task 5");
+    ui::print_centered_title_half(L"Field 7: Task 5");
 
     Field field_7;
     try {
@@ -533,7 +533,7 @@ int main() {
         if (field_7.is_initialized()) {
             Solver solver_7(field_7);
             if (solver_7.solve()) {
-                ui::print_centered(L"Solution for Field 7 is found:");
+                ui::print_centered_title_half(L"Solution for Field 7 is found:");
                 field_7.print_field();
                 ui::print_rules(field_7.get_height());
             } else {

@@ -72,13 +72,14 @@ void Rules::apply_white_edge_rule(Field& field) {
     int width = field.get_width();
     int height = field.get_height();
 
-    for (Cell* cell : white_cells) {
-        int x = cell->get_x();
-        int y = cell->get_y();
+    for (Cell* cell_ptr : white_cells) {
+        Cell& cell = *cell_ptr;
+        int x = cell.get_x();
+        int y = cell.get_y();
 
         if (x == 0 || x == width - 1) {
-            cell->set_entry_dir(Direction::UP);
-            cell->set_exit_dir(Direction::DOWN);
+            cell.set_entry_dir(Direction::UP);
+            cell.set_exit_dir(Direction::DOWN);
 
             if (y > 0) {
                 Cell& prev = field.get_cell(x, y - 1);
@@ -90,8 +91,8 @@ void Rules::apply_white_edge_rule(Field& field) {
             }
 
         } else if (y == 0 || y == height - 1) {
-            cell->set_entry_dir(Direction::LEFT);
-            cell->set_exit_dir(Direction::RIGHT);
+            cell.set_entry_dir(Direction::LEFT);
+            cell.set_exit_dir(Direction::RIGHT);
 
             if (x > 0) {
                 Cell& prev = field.get_cell(x - 1, y);
