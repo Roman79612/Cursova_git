@@ -319,8 +319,8 @@ void Field::print_row_cells(int y) const {
     for (int x = 0; x < max_x; ++x) {
         const Cell& cell = cells[y][x];
         CellType type = cell.get_type();
-        Direction in = cell.get_entry_dir();
-        Direction out = cell.get_exit_dir();
+        Direction in = cell.get_dir_from();
+        Direction out = cell.get_dir_to();
         wchar_t symbol = cell.get_symbol();
 
         bool dir_left  = (in == Direction::LEFT || out == Direction::LEFT);
@@ -368,8 +368,8 @@ void Field::print_row_separator(int y) const {
     std::wcout << L'├';
     for (int x = 0; x < get_width(); ++x) {
         const Cell& cell = cells[y][x];
-        Direction in = cell.get_entry_dir();
-        Direction out = cell.get_exit_dir();
+        Direction in = cell.get_dir_from();
+        Direction out = cell.get_dir_to();
 
         bool dir_up = (in == Direction::UP || out == Direction::UP);
         bool dir_down = (in == Direction::DOWN || out == Direction::DOWN);

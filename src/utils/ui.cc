@@ -23,16 +23,16 @@
 -------------------------------------------------------------------------[>]*/
 void ui::print_rules(int field_height) {
     const std::vector<std::wstring> rules_box = {
-        L"\x1b[32m╔════════════════════════════════════════════════════════╗",
-        L"\x1b[32m║ \x1b[31m                     MASYU RULES:                      \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m1. Draw a single loop through cell centers.          \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m2. The loop must not cross or overlap itself.        \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m3. The loop cannot reverse direction.                \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m4. ● Must turn and go straight before & after.       \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m5. ○ Must go straight and turn before or after.      \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m6. The loop must pass through all circles.           \x1b[32m║",
-        L"\x1b[32m║   \x1b[0m7. The loop must form a closed cycle.                \x1b[32m║",
-        L"\x1b[32m╚════════════════════════════════════════════════════════╝\x1b[0m"
+        GREEN     L"╔════════════════════════════════════════════════════════╗",
+        GREEN     L"║                         " RED BOLD L"MASYU RULES" RESET_COLOUR GREEN L"                    ║",
+        GREEN     L"║   " RESET_COLOUR L"1. Draw a single loop through cell centers.          " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"2. The loop must not cross or overlap itself.        " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"3. The loop cannot reverse direction.                " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"4. ● Must turn and go straight before & after.       " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"5. ○ Must go straight and turn before or after.      " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"6. The loop must pass through all circles.           " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"7. The loop must form a closed cycle.                " GREEN L"║",
+        GREEN     L"╚════════════════════════════════════════════════════════╝" RESET_COLOUR
     };
 
     int top_indent = field_height * 2 + HEIGHT_TITLE;

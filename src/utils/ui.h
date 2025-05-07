@@ -29,10 +29,6 @@
 #define GREEN "\x1b[32m"
 #define RED "\x1b[31m"
 #define BOLD "\x1b[1m"
-#define UNDERLINE "\x1b[4m"
-#define ITALIC "\x1b[3m"
-#define STRIKETHROUGH "\x1b[9m"
-#define BLINK "\x1b[5m"
 
 namespace ui {
     void print_rules(int field_height);

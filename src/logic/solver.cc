@@ -70,32 +70,32 @@ void Solver::solve_empty_field() {
     //Top row
     for (int x = 1; x < width - 1; x++) {
         Cell& tr = field.get_cell(x, 0);
-        tr.set_entry_dir(Direction::LEFT);
-        tr.set_exit_dir(Direction::RIGHT);
+        tr.set_dir_from(Direction::LEFT);
+        tr.set_dir_to(Direction::RIGHT);
 		tr.set_type(CellType::LINE);
     }
 
     //Right column
     for (int y = 1; y < height - 1; y++) {
         Cell& rc = field.get_cell(width - 1, y);
-        rc.set_entry_dir(Direction::UP);
-        rc.set_exit_dir(Direction::DOWN);
+        rc.set_dir_from(Direction::UP);
+        rc.set_dir_to(Direction::DOWN);
 		rc.set_type(CellType::LINE);
     }
 
     //Bottom row
     for (int x = 1; x < width - 1; x++) {
         Cell& br = field.get_cell(x, height - 1);
-        br.set_entry_dir(Direction::RIGHT);
-        br.set_exit_dir(Direction::LEFT);
+        br.set_dir_from(Direction::RIGHT);
+        br.set_dir_to(Direction::LEFT);
 		br.set_type(CellType::LINE);
     }
 
     //Left column
     for (int y = 1; y < height - 1; y++) {
         Cell& lc = field.get_cell(0, y);
-        lc.set_entry_dir(Direction::DOWN);
-        lc.set_exit_dir(Direction::UP);
+        lc.set_dir_from(Direction::DOWN);
+        lc.set_dir_to(Direction::UP);
 		lc.set_type(CellType::LINE);
     }
 }

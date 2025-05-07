@@ -20,8 +20,8 @@ Cell::Cell() {
     y = 0;
     type = CellType::EMPTY;
     visited = false;
-    entry_dir = Direction::NONE;
-    exit_dir = Direction::NONE;
+    dir_from = Direction::NONE;
+    dir_to = Direction::NONE;
     line_symbol = get_symbol();
 }
 
@@ -37,8 +37,8 @@ Cell::Cell(int x, int y) {
         this->y = y;
         type = CellType::EMPTY;
         visited = false;
-        entry_dir = Direction::NONE;
-        exit_dir = Direction::NONE;
+        dir_from = Direction::NONE;
+        dir_to = Direction::NONE;
         line_symbol = get_symbol();
     }
 }
@@ -57,10 +57,74 @@ Cell::Cell(int x, int y, CellType type) {
         this->y = y;
         this->type = type;
         visited = false;
-        entry_dir = Direction::NONE;
-        exit_dir = Direction::NONE;
+        dir_from = Direction::NONE;
+        dir_to = Direction::NONE;
         line_symbol = get_symbol();
     }
+}
+
+/* ----------------------------------------------------------------<Function>-
+ void Cell::set_symbol
+ Sets the visual symbol for the line in this cell.
+ ------------------------------------------------------------------ */
+void Cell::set_symbol() {
+    line_symbol = get_symbol();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_type
+ Synopsis: Set the type of the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::set_type(CellType new_type) {
+    if (!is_valid_type(new_type)) {
+        throw std::invalid_argument("Invalid cell type" + std::to_string(static_cast<int>(new_type)));
+    }
+    if (type == CellType::EMPTY) {
+        type = new_type;
+        set_symbol();
+    } 
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_visited
+ Synopsis: Set the visited status of the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::set_visited(bool state) {
+    visited = state;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_dir_from
+ Synopsis: Set the entry direction for the line into the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::set_dir_from(Direction dir) {
+    if (DirectionHelper::is_valid_direction(dir)) {
+        dir_from = dir;
+    } else {
+        throw std::invalid_argument("Invalid direction for dir_from" + std::to_string(static_cast<int>(dir)));
+    }
+    set_symbol();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_dir_to
+ Synopsis: Set the exit direction for the line out of the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::set_dir_to(Direction dir) {
+    if (DirectionHelper::is_valid_direction(dir)) {
+        dir_to = dir;
+    } else {
+        throw std::invalid_argument("Invalid direction for dir_to" + std::to_string(static_cast<int>(dir)));
+    }
+    set_symbol();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: set_forbidden_dir
+ Synopsis: Set a directions as forbidden for the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::set_forbidden_dir(Direction dir) {
+    forbidden_dirs.insert(dir);
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -88,135 +152,46 @@ CellType Cell::get_type() const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: is_visited
- Synopsis: Check if the cell has been visited.
- ---------------------------------------------------------------------[>]-*/
-bool Cell::is_visited() const {
-    return visited;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: set_type
- Synopsis: Set the type of the cell.
- ---------------------------------------------------------------------[>]-*/
-void Cell::set_type(CellType new_type) {
-    if (!is_valid_type(new_type)) {
-        throw std::invalid_argument("Invalid cell type" + std::to_string(static_cast<int>(new_type)));
-    }
-    if (type == CellType::EMPTY) {
-        type = new_type;
-        set_symbol();
-    } 
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: set_visited
- Synopsis: Set the visited status of the cell.
- ---------------------------------------------------------------------[>]-*/
-void Cell::set_visited(bool state) {
-    visited = state;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: set_entry_dir
- Synopsis: Set the entry direction for the line into the cell.
- ---------------------------------------------------------------------[>]-*/
-void Cell::set_entry_dir(Direction dir) {
-    if (DirectionHelper::is_valid_direction(dir)) {
-        entry_dir = dir;
-    } else {
-        throw std::invalid_argument("Invalid direction for entry_dir" + std::to_string(static_cast<int>(dir)));
-    }
-    set_symbol();
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: set_exit_dir
- Synopsis: Set the exit direction for the line out of the cell.
- ---------------------------------------------------------------------[>]-*/
-void Cell::set_exit_dir(Direction dir) {
-    if (DirectionHelper::is_valid_direction(dir)) {
-        exit_dir = dir;
-    } else {
-        throw std::invalid_argument("Invalid direction for exit_dir" + std::to_string(static_cast<int>(dir)));
-    }
-    set_symbol();
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_entry_dir
- Synopsis: Get the entry direction of the line into the cell.
- ---------------------------------------------------------------------[>]-*/
-Direction Cell::get_entry_dir() const {
-    return entry_dir;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_exit_dir
- Synopsis: Get the exit direction of the line out of the cell.
- ---------------------------------------------------------------------[>]-*/
-Direction Cell::get_exit_dir() const {
-    return exit_dir;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: reset_dirs
- Synopsis: Reset both directions (entry and exit) to the default (UP).
- ---------------------------------------------------------------------[>]-*/
-void Cell::reset_dirs() {
-    entry_dir = Direction::NONE;
-    exit_dir = Direction::NONE;
-}
-
-/* ----------------------------------------------------------------<Function>-
- void Cell::set_line_symbol
- Sets the visual symbol for the line in this cell.
- ------------------------------------------------------------------ */
-void Cell::set_symbol() {
-    line_symbol = get_symbol();
-}
-
-/* ---------------------------------------------------------------------[<]- 
  Function: set_line_symbol
  Synopsis: Set the line symbol based on the entry and exit directions.
  ---------------------------------------------------------------------[>]-*/
 wchar_t Cell::get_symbol() const {
     if (type == CellType::LINE) {
-        if ((entry_dir == Direction::UP && exit_dir == Direction::DOWN) ||
-            (entry_dir == Direction::DOWN && exit_dir == Direction::UP) ||
-            (entry_dir == Direction::NONE && exit_dir == Direction::DOWN) ||
-            (entry_dir == Direction::DOWN && exit_dir == Direction::NONE) ||
-            (entry_dir == Direction::UP && exit_dir == Direction::NONE) ||
-            (entry_dir == Direction::NONE && exit_dir == Direction::UP)) {
+        if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
+            (dir_from == Direction::DOWN && dir_to == Direction::UP) ||
+            (dir_from == Direction::NONE && dir_to == Direction::DOWN) ||
+            (dir_from == Direction::DOWN && dir_to == Direction::NONE) ||
+            (dir_from == Direction::UP && dir_to == Direction::NONE) ||
+            (dir_from == Direction::NONE && dir_to == Direction::UP)) {
             return L'│';
         }
 
-        if ((entry_dir == Direction::LEFT && exit_dir == Direction::RIGHT) ||
-            (entry_dir == Direction::RIGHT && exit_dir == Direction::LEFT) ||
-            (entry_dir == Direction::NONE && exit_dir == Direction::RIGHT) ||
-            (entry_dir == Direction::RIGHT && exit_dir == Direction::NONE) ||
-            (entry_dir == Direction::LEFT && exit_dir == Direction::NONE) ||
-            (entry_dir == Direction::NONE && exit_dir == Direction::LEFT)) {
+        if ((dir_from == Direction::LEFT && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::LEFT) ||
+            (dir_from == Direction::NONE && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::NONE) ||
+            (dir_from == Direction::LEFT && dir_to == Direction::NONE) ||
+            (dir_from == Direction::NONE && dir_to == Direction::LEFT)) {
             return L'─';
         }
 
-        if ((entry_dir == Direction::UP && exit_dir == Direction::RIGHT) ||
-            (entry_dir == Direction::RIGHT && exit_dir == Direction::UP)) {
+        if ((dir_from == Direction::UP && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::UP)) {
             return L'└';
         }
 
-        if ((entry_dir == Direction::UP && exit_dir == Direction::LEFT) ||
-            (entry_dir == Direction::LEFT && exit_dir == Direction::UP)) {
+        if ((dir_from == Direction::UP && dir_to == Direction::LEFT) ||
+            (dir_from == Direction::LEFT && dir_to == Direction::UP)) {
             return L'┘';
         }
 
-        if ((entry_dir == Direction::DOWN && exit_dir == Direction::RIGHT) ||
-            (entry_dir == Direction::RIGHT && exit_dir == Direction::DOWN)) {
+        if ((dir_from == Direction::DOWN && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::DOWN)) {
             return L'┌';
         }
 
-        if ((entry_dir == Direction::DOWN && exit_dir == Direction::LEFT) ||
-            (entry_dir == Direction::LEFT && exit_dir == Direction::DOWN)) {
+        if ((dir_from == Direction::DOWN && dir_to == Direction::LEFT) ||
+            (dir_from == Direction::LEFT && dir_to == Direction::DOWN)) {
             return L'┐';
         }
         return L'?';
@@ -232,6 +207,52 @@ wchar_t Cell::get_symbol() const {
     }
 }
 
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_dir_from
+ Synopsis: Get the entry direction of the line into the cell.
+ ---------------------------------------------------------------------[>]-*/
+Direction Cell::get_dir_from() const{
+    return dir_from;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_dir_to
+ Synopsis: Get the exit direction of the line out of the cell.
+ ---------------------------------------------------------------------[>]-*/
+Direction Cell::get_dir_to() const{
+    return dir_to;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_symbol
+ Synopsis: Getter for the line symbol of the cell.
+ ---------------------------------------------------------------------[>]-*/
+std::set<Direction> Cell::get_forbidden_dirs() {
+    return forbidden_dirs;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_dirs
+ Synopsis: Reset both directions (entry and exit) to the default (UP).
+ ---------------------------------------------------------------------[>]-*/
+void Cell::reset_dirs() {
+    dir_from = Direction::NONE;
+    dir_to = Direction::NONE;
+    forbidden_dirs.clear();
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: remove_forbidden_dir
+ Synopsis: Remove a direction from the forbidden list for the cell.
+ ---------------------------------------------------------------------[>]-*/
+void Cell::remove_forbidden_dir(Direction dir) {
+    forbidden_dirs.erase(dir);
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_valid_type
+ Synopsis: Check if the cell type is valid.
+ ---------------------------------------------------------------------[>]-*/
 bool Cell::is_valid_type(CellType type) const {
     return type == CellType::EMPTY || type == CellType::BLACK || type == CellType::WHITE || type == CellType::LINE;
 }
@@ -266,4 +287,28 @@ bool Cell::is_line() const {
  ---------------------------------------------------------------------[>]-*/
 bool Cell::is_empty() const {
     return type == CellType::EMPTY;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_visited
+ Synopsis: Check if the cell has been visited.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_visited() const {
+    return visited;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_dir_forbidden
+ Synopsis: Check if a direction is forbidden for the cell.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_forbidden_dir(Direction dir) const {
+    return forbidden_dirs.count(dir) > 0;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: is_forbid_overflow
+ Synopsis: Check if the cell has too many forbidden directions.
+ ---------------------------------------------------------------------[>]-*/
+bool Cell::is_forbid_overflow() const {
+    return forbidden_dirs.size() > 2;
 }

@@ -19,23 +19,23 @@ void Rules::apply_corner_rule(Field& field) {
     int max_y = field.get_height() - 1;
 
     Cell& tl = field.get_cell(0, 0);
-    tl.set_entry_dir(Direction::DOWN);
-    tl.set_exit_dir(Direction::RIGHT);
+    tl.set_dir_from(Direction::DOWN);
+    tl.set_dir_to(Direction::RIGHT);
     tl.set_type(CellType::LINE);
 
     Cell& tr = field.get_cell(max_x, 0);
-    tr.set_entry_dir(Direction::DOWN);
-    tr.set_exit_dir(Direction::LEFT);
+    tr.set_dir_from(Direction::DOWN);
+    tr.set_dir_to(Direction::LEFT);
     tr.set_type(CellType::LINE);
 
     Cell& bl = field.get_cell(0, max_y);
-    bl.set_entry_dir(Direction::UP);
-    bl.set_exit_dir(Direction::RIGHT);
+    bl.set_dir_from(Direction::UP);
+    bl.set_dir_to(Direction::RIGHT);
     bl.set_type(CellType::LINE);
 
     Cell& br = field.get_cell(max_x, max_y);
-    br.set_entry_dir(Direction::UP);
-    br.set_exit_dir(Direction::LEFT);
+    br.set_dir_from(Direction::UP);
+    br.set_dir_to(Direction::LEFT);
     br.set_type(CellType::LINE);
 }
 
@@ -54,11 +54,11 @@ void Rules::force_straight_path(Field& field, int x, int y, Direction dir) {
     Direction opp = DirectionHelper::opposite(dir);
 
     if (next.get_type() == CellType::EMPTY) {
-        next.set_entry_dir(opp);
-        next.set_exit_dir(dir);
+        next.set_dir_from(opp);
+        next.set_dir_to(dir);
         next.set_type(CellType::LINE);
     } else if (next.get_type() == CellType::BLACK || next.get_type() == CellType::WHITE) {
-        next.set_entry_dir(opp);
+        next.set_dir_from(opp);
     }
 }
 
@@ -78,29 +78,29 @@ void Rules::apply_white_edge_rule(Field& field) {
         int y = cell.get_y();
 
         if (x == 0 || x == width - 1) {
-            cell.set_entry_dir(Direction::UP);
-            cell.set_exit_dir(Direction::DOWN);
+            cell.set_dir_from(Direction::UP);
+            cell.set_dir_to(Direction::DOWN);
 
             if (y > 0) {
                 Cell& prev = field.get_cell(x, y - 1);
-                prev.set_exit_dir(Direction::DOWN);
+                prev.set_dir_to(Direction::DOWN);
             }
             if (y < height - 1) {
                 Cell& next = field.get_cell(x, y + 1);
-                next.set_entry_dir(Direction::UP);
+                next.set_dir_from(Direction::UP);
             }
 
         } else if (y == 0 || y == height - 1) {
-            cell.set_entry_dir(Direction::LEFT);
-            cell.set_exit_dir(Direction::RIGHT);
+            cell.set_dir_from(Direction::LEFT);
+            cell.set_dir_to(Direction::RIGHT);
 
             if (x > 0) {
                 Cell& prev = field.get_cell(x - 1, y);
-                prev.set_exit_dir(Direction::RIGHT);
+                prev.set_dir_to(Direction::RIGHT);
             }
             if (x < width - 1) {
                 Cell& next = field.get_cell(x + 1, y);
-                next.set_entry_dir(Direction::LEFT);
+                next.set_dir_from(Direction::LEFT);
             }
         }
         else {
@@ -127,39 +127,39 @@ void Rules::apply_black_edge_rule(Field& field) {
         int y = cell.get_y();
 
         if (x == 0 && y == 0) {
-            cell.set_entry_dir(Direction::RIGHT);
-            cell.set_exit_dir(Direction::DOWN);
+            cell.set_dir_from(Direction::RIGHT);
+            cell.set_dir_to(Direction::DOWN);
             force_straight_path(field, x, y, Direction::DOWN);
 
         } else if (x == width - 1 && y == 0) {
-            cell.set_entry_dir(Direction::LEFT);
-            cell.set_exit_dir(Direction::DOWN);
+            cell.set_dir_from(Direction::LEFT);
+            cell.set_dir_to(Direction::DOWN);
             force_straight_path(field, x, y, Direction::DOWN);
 
         } else if (x == 0 && y == height - 1) {
-            cell.set_entry_dir(Direction::UP);
-            cell.set_exit_dir(Direction::RIGHT);
+            cell.set_dir_from(Direction::UP);
+            cell.set_dir_to(Direction::RIGHT);
             force_straight_path(field, x, y, Direction::RIGHT);
 
         } else if (x == width - 1 && y == height - 1) {
-            cell.set_entry_dir(Direction::UP);
-            cell.set_exit_dir(Direction::LEFT);
+            cell.set_dir_from(Direction::UP);
+            cell.set_dir_to(Direction::LEFT);
             force_straight_path(field, x, y, Direction::LEFT);
 
         } else if (y == 0) {
-            cell.set_exit_dir(Direction::DOWN);
+            cell.set_dir_to(Direction::DOWN);
             force_straight_path(field, x, y, Direction::DOWN);
 
         } else if (y == height - 1) {
-            cell.set_exit_dir(Direction::UP);
+            cell.set_dir_to(Direction::UP);
             force_straight_path(field, x, y, Direction::UP);
 
         } else if (x == 0) {
-            cell.set_exit_dir(Direction::RIGHT);
+            cell.set_dir_to(Direction::RIGHT);
             force_straight_path(field, x, y, Direction::RIGHT);
 
         } else if (x == width - 1) {
-            cell.set_exit_dir(Direction::LEFT);
+            cell.set_dir_to(Direction::LEFT);
             force_straight_path(field, x, y, Direction::LEFT);
         }
     }
