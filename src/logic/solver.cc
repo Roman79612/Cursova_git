@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-06
+ Revised: 2025-05-07
   Description: Implementation of the Solver class for solving Masyu puzzles.
  ------------------------------------------------------------------</Header>-*/
 
@@ -14,7 +14,7 @@
  Function: Solver::Solver
  Synopsis: Constructor for the Solver class.
  ---------------------------------------------------------------------[>]*/
-Solver::Solver(Field& field) : field(field) {
+Solver::Solver(Field& field) : field(field), graph(field) {
     if (!field.is_initialized()) {
         throw std::invalid_argument("Field is not initialized.");
     }
@@ -46,8 +46,14 @@ bool Solver::solve() {
  Synopsis: Applies deduction rules to the field.
  ---------------------------------------------------------------------[>]*/
 void Solver::apply_deduction_rules() {
-	Rules::apply_white_edge_rule(field);
-	Rules::apply_black_edge_rule(field);
+    Rules::apply_black_corner_rule(field, graph);
+	Rules::apply_white_edge_rule(field, graph);
+	Rules::apply_black_edge_rule(field, graph);
+    Rules::apply_black_near_border_rule(field, graph);
+    Rules::apply_adjacent_black_rule(field, graph);
+    Rules::apply_adjacent_black_near_edge_rule(field, graph);
+    Rules::apply_white_border_pair_rule(field, graph);
+    Rules::enforce_white_triplets(field, graph);
 }
 
 /* ---------------------------------------------------------------------[<]-

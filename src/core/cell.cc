@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-06
+ Revised: 2025-05-07
  Description: Implementation of the Cell class for handling puzzle grid cells,
               including handling directions and cell states.
  ------------------------------------------------------------------</Header>-*/
@@ -22,7 +22,9 @@ Cell::Cell() {
     visited = false;
     dir_from = Direction::NONE;
     dir_to = Direction::NONE;
-    line_symbol = get_symbol();
+    forb_dir1 = Direction::NONE;
+    forb_dir2 = Direction::NONE;
+    symbol = get_symbol();
 }
 
 /* ----------------------------------------------------------------<Function>-
@@ -32,15 +34,16 @@ Cell::Cell() {
 Cell::Cell(int x, int y) {
     if (x < 0 || y < 0) {
         throw std::invalid_argument("Coordinates must be non-negative" + std::to_string(x) + ", " + std::to_string(y));
-    } else {
-        this->x = x;
-        this->y = y;
-        type = CellType::EMPTY;
-        visited = false;
-        dir_from = Direction::NONE;
-        dir_to = Direction::NONE;
-        line_symbol = get_symbol();
     }
+    this->x = x;
+    this->y = y;
+    type = CellType::EMPTY;
+    visited = false;
+    dir_from = Direction::NONE;
+    dir_to = Direction::NONE;
+    forb_dir1 = Direction::NONE;
+    forb_dir2 = Direction::NONE;
+    symbol = get_symbol();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -50,25 +53,19 @@ Cell::Cell(int x, int y) {
 Cell::Cell(int x, int y, CellType type) {
     if (x < 0 || y < 0) {
         throw std::invalid_argument("Coordinates must be non-negative" + std::to_string(x) + ", " + std::to_string(y));
-    } else if (!is_valid_type(type)) {
+    } 
+    if (!is_valid_type(type)) {
         throw std::invalid_argument("Invalid cell type" + std::to_string(static_cast<int>(type)));
-    } else {
-        this->x = x;
-        this->y = y;
-        this->type = type;
-        visited = false;
-        dir_from = Direction::NONE;
-        dir_to = Direction::NONE;
-        line_symbol = get_symbol();
     }
-}
-
-/* ----------------------------------------------------------------<Function>-
- void Cell::set_symbol
- Sets the visual symbol for the line in this cell.
- ------------------------------------------------------------------ */
-void Cell::set_symbol() {
-    line_symbol = get_symbol();
+    this->x = x;
+    this->y = y;
+    this->type = type;
+    visited = false;
+    dir_from = Direction::NONE;
+    dir_to = Direction::NONE;
+    forb_dir1 = Direction::NONE;
+    forb_dir2 = Direction::NONE;
+    symbol = get_symbol();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -81,7 +78,7 @@ void Cell::set_type(CellType new_type) {
     }
     if (type == CellType::EMPTY) {
         type = new_type;
-        set_symbol();
+        symbol = get_symbol();
     } 
 }
 
@@ -98,12 +95,12 @@ void Cell::set_visited(bool state) {
  Synopsis: Set the entry direction for the line into the cell.
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_dir_from(Direction dir) {
-    if (DirectionHelper::is_valid_direction(dir)) {
-        dir_from = dir;
-    } else {
-        throw std::invalid_argument("Invalid direction for dir_from" + std::to_string(static_cast<int>(dir)));
+    if (!DirectionHelper::is_valid_direction(dir)) {
+        throw std::invalid_argument("Invalid direction for dir_from: " + std::to_string(static_cast<int>(dir)));
     }
-    set_symbol();
+
+    dir_from = dir;
+    symbol = get_symbol();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -111,12 +108,12 @@ void Cell::set_dir_from(Direction dir) {
  Synopsis: Set the exit direction for the line out of the cell.
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_dir_to(Direction dir) {
-    if (DirectionHelper::is_valid_direction(dir)) {
-        dir_to = dir;
-    } else {
-        throw std::invalid_argument("Invalid direction for dir_to" + std::to_string(static_cast<int>(dir)));
+    if (!DirectionHelper::is_valid_direction(dir)) {
+        throw std::invalid_argument("Invalid direction for dir_to: " + std::to_string(static_cast<int>(dir)));
     }
-    set_symbol();
+
+    dir_to = dir;
+    symbol = get_symbol();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -124,7 +121,11 @@ void Cell::set_dir_to(Direction dir) {
  Synopsis: Set a directions as forbidden for the cell.
  ---------------------------------------------------------------------[>]-*/
 void Cell::set_forbidden_dir(Direction dir) {
-    forbidden_dirs.insert(dir);
+    if (forb_dir1 == Direction::NONE) {
+        forb_dir1 = dir;
+    } else {
+        forb_dir2 = dir;
+    }
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -148,30 +149,25 @@ int Cell::get_y() const {
  Synopsis: Getter for the type of the cell.
  ---------------------------------------------------------------------[>]-*/
 CellType Cell::get_type() const {
+    if (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE) {
+        return CellType::LINE;
+    }
     return type;
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: set_line_symbol
+ Function: set_symbol
  Synopsis: Set the line symbol based on the entry and exit directions.
  ---------------------------------------------------------------------[>]-*/
 wchar_t Cell::get_symbol() const {
     if (type == CellType::LINE) {
         if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
-            (dir_from == Direction::DOWN && dir_to == Direction::UP) ||
-            (dir_from == Direction::NONE && dir_to == Direction::DOWN) ||
-            (dir_from == Direction::DOWN && dir_to == Direction::NONE) ||
-            (dir_from == Direction::UP && dir_to == Direction::NONE) ||
-            (dir_from == Direction::NONE && dir_to == Direction::UP)) {
+            (dir_from == Direction::DOWN && dir_to == Direction::UP)) {
             return L'│';
         }
 
         if ((dir_from == Direction::LEFT && dir_to == Direction::RIGHT) ||
-            (dir_from == Direction::RIGHT && dir_to == Direction::LEFT) ||
-            (dir_from == Direction::NONE && dir_to == Direction::RIGHT) ||
-            (dir_from == Direction::RIGHT && dir_to == Direction::NONE) ||
-            (dir_from == Direction::LEFT && dir_to == Direction::NONE) ||
-            (dir_from == Direction::NONE && dir_to == Direction::LEFT)) {
+            (dir_from == Direction::RIGHT && dir_to == Direction::LEFT)) {
             return L'─';
         }
 
@@ -195,13 +191,43 @@ wchar_t Cell::get_symbol() const {
             return L'┐';
         }
         return L'?';
-
     } else if (type == CellType::WHITE) {
         return L'●';
     } else if (type == CellType::BLACK) {
         return L'○';
-    } else if (type == CellType::EMPTY) {
+    } else if (type == CellType::EMPTY && (dir_from == Direction::NONE || dir_to == Direction::NONE)) {
         return L' ';
+    } else if (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE) {
+        if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
+            (dir_from == Direction::DOWN && dir_to == Direction::UP)) {
+            return L'│';
+        }
+
+        if ((dir_from == Direction::LEFT && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::LEFT)) {
+            return L'─';
+        }
+
+        if ((dir_from == Direction::UP && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::UP)) {
+            return L'└';
+        }
+
+        if ((dir_from == Direction::UP && dir_to == Direction::LEFT) ||
+            (dir_from == Direction::LEFT && dir_to == Direction::UP)) {
+            return L'┘';
+        }
+
+        if ((dir_from == Direction::DOWN && dir_to == Direction::RIGHT) ||
+            (dir_from == Direction::RIGHT && dir_to == Direction::DOWN)) {
+            return L'┌';
+        }
+
+        if ((dir_from == Direction::DOWN && dir_to == Direction::LEFT) ||
+            (dir_from == Direction::LEFT && dir_to == Direction::DOWN)) {
+            return L'┐';
+        }
+        return L'?';
     } else {
         return L'?';
     }
@@ -224,11 +250,19 @@ Direction Cell::get_dir_to() const{
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: get_symbol
- Synopsis: Getter for the line symbol of the cell.
+ Function: get_forb_dir1
+ Synopsis: Get the forbidden direction of the cell.
  ---------------------------------------------------------------------[>]-*/
-std::set<Direction> Cell::get_forbidden_dirs() {
-    return forbidden_dirs;
+Direction Cell::get_forb_dir1() const{
+    return forb_dir1;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_forb_dir2
+ Synopsis: Get the forbidden direction of the cell.
+ ---------------------------------------------------------------------[>]-*/
+Direction Cell::get_forb_dir2() const{
+    return forb_dir2;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -238,7 +272,8 @@ std::set<Direction> Cell::get_forbidden_dirs() {
 void Cell::reset_dirs() {
     dir_from = Direction::NONE;
     dir_to = Direction::NONE;
-    forbidden_dirs.clear();
+    forb_dir1 = Direction::NONE;
+    forb_dir2 = Direction::NONE;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -246,7 +281,13 @@ void Cell::reset_dirs() {
  Synopsis: Remove a direction from the forbidden list for the cell.
  ---------------------------------------------------------------------[>]-*/
 void Cell::remove_forbidden_dir(Direction dir) {
-    forbidden_dirs.erase(dir);
+    if (forb_dir1 == dir) {
+        forb_dir1 = Direction::NONE;
+    } else if (forb_dir2 == dir) {
+        forb_dir2 = Direction::NONE;
+    } else {
+        return;
+    }
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -302,13 +343,5 @@ bool Cell::is_visited() const {
  Synopsis: Check if a direction is forbidden for the cell.
  ---------------------------------------------------------------------[>]-*/
 bool Cell::is_forbidden_dir(Direction dir) const {
-    return forbidden_dirs.count(dir) > 0;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: is_forbid_overflow
- Synopsis: Check if the cell has too many forbidden directions.
- ---------------------------------------------------------------------[>]-*/
-bool Cell::is_forbid_overflow() const {
-    return forbidden_dirs.size() > 2;
+    return forb_dir1 == dir || forb_dir2 == dir;
 }

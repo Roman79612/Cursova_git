@@ -15,6 +15,7 @@
 #include "../core_headers/cell.h"
 #include "../core_headers/direction.h"
 #include "../logic_headers/rules.h"
+#include "../logic_headers/graph.h"
 
 class Solver {
 public:
@@ -23,6 +24,7 @@ public:
 
 private:
     Field& field;
+    Graph graph;
     std::vector<Cell*> whit_cells;
     std::vector<Cell*> black_cells;
 

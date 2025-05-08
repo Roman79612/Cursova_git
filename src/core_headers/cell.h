@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-06
+ Revised: 2025-05-07
  Description: Header for representing a cell in the puzzle grid.
  ------------------------------------------------------------------</Header>-*/
 
@@ -35,16 +35,16 @@ private:
 
     Direction dir_from;
     Direction dir_to;
-    std::set<Direction> forbidden_dirs;
+    Direction forb_dir1;
+    Direction forb_dir2;
 
-    wchar_t line_symbol;
+    wchar_t symbol;
 
 public:
     Cell();
     Cell(int x, int y);
     Cell(int x, int y, CellType type);
 
-    void set_symbol();
     void set_type(CellType new_type);
     void set_visited(bool state);
     void set_dir_from(Direction dir);
@@ -57,7 +57,8 @@ public:
     wchar_t get_symbol() const;
     Direction get_dir_from() const;
     Direction get_dir_to() const;
-    std::set<Direction> get_forbidden_dirs();
+    Direction get_forb_dir1() const;
+    Direction get_forb_dir2() const;
 
     void remove_forbidden_dir(Direction dir);
     void reset_dirs();
@@ -69,7 +70,6 @@ public:
     bool is_empty() const;
     bool is_visited() const;
     bool is_forbidden_dir(Direction dir) const;
-    bool is_forbid_overflow() const;
 };
 
 #endif // CELL_H

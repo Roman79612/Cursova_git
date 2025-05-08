@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-05
+ Revised: 2025-05-07
  Description: Implementation of direction movement and utility functions.
  ------------------------------------------------------------------</Header>-*/
 
@@ -31,6 +31,33 @@ int DirectionHelper::get_dy(Direction dir) {
         case Direction::UP:    return -1;
         case Direction::DOWN:  return 1;
         default:               return 0;
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: get_dir_delta
+ Synopsis: Returns Direction enum value for a given delta (dx, dy).
+ ---------------------------------------------------------------------[>]-*/
+Direction DirectionHelper::get_dir_delta(int dx, int dy) {
+    if (dx == 0 && dy == -1) return Direction::UP;
+    if (dx == 0 && dy ==  1) return Direction::DOWN;
+    if (dx == -1 && dy == 0) return Direction::LEFT;
+    if (dx == 1 && dy == 0) return Direction::RIGHT;
+    return Direction::NONE;
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: get_delta
+ Synopsis: Returns delta (dx, dy) for the given direction.
+ ---------------------------------------------------------------------[>]*/
+std::pair<int, int> DirectionHelper::get_delta(Direction dir) {
+    switch (dir) {
+        case Direction::UP:    return {-1, 0};
+        case Direction::DOWN:  return {1, 0};
+        case Direction::LEFT:  return {0, -1};
+        case Direction::RIGHT: return {0, 1};
+        case Direction::NONE:  return {0, 0};
+        default:               return {0, 0};
     }
 }
 
@@ -85,10 +112,24 @@ bool DirectionHelper::is_valid_direction(Direction dir) {
 }
 
 /* ---------------------------------------------------------------------[<]-
+ Function: perpendicular
+ Synopsis: Returns a vector of two perpendicular directions.
+ ---------------------------------------------------------------------[>]*/
+std::vector<Direction> DirectionHelper::get_perpendicular(Direction dir) {
+    switch (dir) {
+        case Direction::UP:    return {Direction::LEFT, Direction::RIGHT};
+        case Direction::DOWN:  return {Direction::LEFT, Direction::RIGHT};
+        case Direction::LEFT:  return {Direction::UP, Direction::DOWN};
+        case Direction::RIGHT: return {Direction::UP, Direction::DOWN};
+        default:               return {};
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
  Function: direction_to_string
  Synopsis: Returns direction name as string.
  ---------------------------------------------------------------------[>]*/
-const char *DirectionHelper::direction_to_string(Direction dir) {
+const char *DirectionHelper::to_string(Direction dir) {
     switch (dir) {
         case Direction::UP:    return "UP";
         case Direction::DOWN:  return "DOWN";
@@ -98,3 +139,12 @@ const char *DirectionHelper::direction_to_string(Direction dir) {
         default:               return "UNKNOWN";
     }
 }
+
+/* ---------------------------------------------------------------------[<]-
+ Function: all_dirs
+ Synopsis: Returns a vector of all directions.
+ ---------------------------------------------------------------------[>]*/
+std::vector<Direction> DirectionHelper::get_all_dirs() {
+    return {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT};
+}
+

@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-06
+ Revised: 2025-05-07
  Description: Implementation of the Field class for managing puzzle grid,
           including access, validation, and utility methods.
  ------------------------------------------------------------------</Header>-*/
@@ -49,17 +49,6 @@ bool Field::is_initialized() const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: get_cell
- Synopsis: Returns a copy of the cell at (x, y).
- ---------------------------------------------------------------------[>]-*/
-Cell& Field::get_cell(int x, int y) {
-    if (!in_bounds(x, y)) {
-        throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
-    }
-    return cells[y][x];
-}
-
-/* ---------------------------------------------------------------------[<]- 
  Function: set_cell
  Synopsis: Sets the cell at the specified coordinates.
  ---------------------------------------------------------------------[>]-*/
@@ -92,45 +81,25 @@ void Field::set_cell_type(const Cell& cell, CellType type) {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: reset_all_dirs
- Synopsis: Resets directions of all cells in the field.
+ Function: get_cell
+ Synopsis: Returns the cell at (x, y).
  ---------------------------------------------------------------------[>]-*/
-void Field::reset_all_dirs() {
-    for (auto& row : cells) {
-        for (auto& cell : row) {
-            cell.reset_dirs();
-        }
+Cell& Field::get_cell(int x, int y) {
+    if (!in_bounds(x, y)) {
+        throw std::out_of_range("Coordinates out of bounds " + std::to_string(x) + ", " + std::to_string(y));
     }
+    return cells[y][x];
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: reset_all_visited
- Synopsis: Resets visited status of all cells.
+ Function: get_cell
+ Synopsis: Safety returns the cell at (x, y).
  ---------------------------------------------------------------------[>]-*/
-void Field::reset_all_visited() {
-    for (auto& row : cells) {
-        for (auto& cell : row) {
-            cell.set_visited(false);
-        }
+Cell* Field::get_cell_ptr(int x, int y) {
+    if (!in_bounds(x, y)) {
+        return nullptr;
     }
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: in_bounds
- Synopsis: Checks if (x, y) is within field bounds.
- ---------------------------------------------------------------------[>]-*/
-bool Field::in_bounds(int x, int y) const {
-    return x >= 0 && x < width && y >= 0 && y < height;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: can_go
- Synopsis: Checks if movement from (x, y) in given direction is within bounds.
- ---------------------------------------------------------------------[>]-*/
-bool Field::can_go(int x, int y, Direction dir) const {
-    int nx = x + DirectionHelper::get_dx(dir);
-    int ny = y + DirectionHelper::get_dy(dir);
-    return in_bounds(nx, ny);
+    return &cells[y][x];
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -164,6 +133,99 @@ int Field::get_white_count() const {
 int Field::get_black_count() const {
     return black_count;
 }
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_neighbors
+ Synopsis: Returns valid (x, y) coordinates of neighboring cells.
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Cell*> Field::get_neighbors(Cell &cell) {
+    std::vector<Cell*> neighbors;
+
+    for (Direction dir : DirectionHelper::get_all_dirs()) {
+        int nx = cell.get_x() + DirectionHelper::get_dx(dir);
+        int ny = cell.get_y() + DirectionHelper::get_dy(dir);
+
+        if (in_bounds(nx, ny)) {
+            neighbors.push_back(&get_cell(nx, ny));
+        }
+    }
+
+    return neighbors;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: available_directions
+ Synopsis: Returns list of directions available from (x, y).
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Direction> Field::get_available_directions(Cell &cell) {
+    std::vector<Direction> available;
+
+    for (Direction dir : DirectionHelper::get_all_dirs()) {
+        if (!cell.is_forbidden_dir(dir)) {
+            available.push_back(dir);
+        }
+    }
+
+    return available;
+}
+
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_white_cells
+ Synopsis: Returns coordinates of all white cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Cell*> Field::get_white_cells() {
+    std::vector<Cell*> white_cells;
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            if (cell.get_type() == CellType::WHITE) {
+                white_cells.push_back(&cell);
+            }
+        }
+    }
+    return white_cells;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_black_cells
+ Synopsis: Returns coordinates of all black cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+std::vector<Cell*> Field::get_black_cells() {
+    std::vector<Cell*> black_cells;
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            if (cell.get_type() == CellType::BLACK) {
+                black_cells.push_back(&cell);
+            }
+        }
+    }
+    return black_cells;
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_all_dirs
+ Synopsis: Resets directions of all cells in the field.
+ ---------------------------------------------------------------------[>]-*/
+void Field::reset_all_dirs() {
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            cell.reset_dirs();
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: reset_all_visited
+ Synopsis: Resets visited status of all cells.
+ ---------------------------------------------------------------------[>]-*/
+void Field::reset_all_visited() {
+    for (auto& row : cells) {
+        for (auto& cell : row) {
+            cell.set_visited(false);
+        }
+    }
+}
+
 /* ---------------------------------------------------------------------[<]- 
  Function: reset
  Synopsis: Resets all visited flags and directions in the field.
@@ -185,31 +247,41 @@ Field Field::clone() const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: get_neighbors
- Synopsis: Returns valid (x, y) coordinates of neighboring cells.
+ Function: in_bounds
+ Synopsis: Checks if (x, y) is within field bounds.
  ---------------------------------------------------------------------[>]-*/
-std::vector<std::pair<int, int>> Field::get_neighbors(int x, int y) const {
-    std::vector<std::pair<int, int>> neighbors;
-    for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
-        int nx = x + DirectionHelper::get_dx(dir);
-        int ny = y + DirectionHelper::get_dy(dir);
-        if (in_bounds(nx, ny))
-            neighbors.emplace_back(nx, ny);
-    }
-    return neighbors;
+bool Field::in_bounds(int x, int y) const {
+    return x >= 0 && x < width && y >= 0 && y < height;
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: available_directions
- Synopsis: Returns list of directions available from (x, y).
+ Function: can_go
+ Synopsis: Checks if movement from (x, y) in given direction is within bounds.
  ---------------------------------------------------------------------[>]-*/
-std::vector<Direction> Field::available_directions(int x, int y) const {
-    std::vector<Direction> dirs;
-    for (Direction dir : {Direction::UP, Direction::DOWN, Direction::LEFT, Direction::RIGHT}) {
-        if (can_go(x, y, dir))
-            dirs.push_back(dir);
+bool Field::can_go(int x, int y, Direction dir) const {
+    int nx = x + DirectionHelper::get_dx(dir);
+    int ny = y + DirectionHelper::get_dy(dir);
+    return in_bounds(nx, ny);
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: can_go_in_steps
+ Synopsis: Checks if movement from (x, y) in direction is within bounds on N steps.
+ ---------------------------------------------------------------------[>]-*/
+bool Field::can_go_in_steps(int x, int y, Direction dir, int steps) const {
+    int dx = DirectionHelper::get_dx(dir);
+    int dy = DirectionHelper::get_dy(dir);
+
+    for (int i = 1; i <= steps; ++i) {
+        int nx = x + dx * i;
+        int ny = y + dy * i;
+
+        if (!in_bounds(nx, ny)) {
+            return false;
+        }
     }
-    return dirs;
+
+    return true;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -242,38 +314,6 @@ bool Field::has_black_cell() {
         }
     }
     return black_count > 0; 
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_white_cells
- Synopsis: Returns coordinates of all white cells in the field.
- ---------------------------------------------------------------------[>]-*/
-std::vector<Cell*> Field::get_white_cells() {
-    std::vector<Cell*> white_cells;
-    for (auto& row : cells) {
-        for (auto& cell : row) {
-            if (cell.get_type() == CellType::WHITE) {
-                white_cells.push_back(&cell);
-            }
-        }
-    }
-    return white_cells;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_black_cells
- Synopsis: Returns coordinates of all black cells in the field.
- ---------------------------------------------------------------------[>]-*/
-std::vector<Cell*> Field::get_black_cells() {
-    std::vector<Cell*> black_cells;
-    for (auto& row : cells) {
-        for (auto& cell : row) {
-            if (cell.get_type() == CellType::BLACK) {
-                black_cells.push_back(&cell);
-            }
-        }
-    }
-    return black_cells;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -318,9 +358,10 @@ void Field::print_row_cells(int y) const {
     int max_x = get_width();
     for (int x = 0; x < max_x; ++x) {
         const Cell& cell = cells[y][x];
-        CellType type = cell.get_type();
         Direction in = cell.get_dir_from();
         Direction out = cell.get_dir_to();
+        
+        CellType type = cell.get_type();
         wchar_t symbol = cell.get_symbol();
 
         bool dir_left  = (in == Direction::LEFT || out == Direction::LEFT);
@@ -350,9 +391,9 @@ void Field::print_row_cells(int y) const {
                 ui::backspace(1);
                 std::wcout << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│";
             } else if (dir_right) {
-                std::wcout << RESET_COLOUR << L" " << symbol << L" " << GREEN << L"┼" << RESET_COLOUR;
+                std::wcout << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
             } else {
-                std::wcout << L" " << symbol << L" " << L"│";
+                std::wcout << GREEN << L" " << symbol << L" " << RESET_COLOUR<< L"│";
             }
         }
     }
@@ -370,11 +411,15 @@ void Field::print_row_separator(int y) const {
         const Cell& cell = cells[y][x];
         Direction in = cell.get_dir_from();
         Direction out = cell.get_dir_to();
+        Direction forb_1 = cell.get_forb_dir1();
+        Direction forb_2 = cell.get_forb_dir2();
 
         bool dir_up = (in == Direction::UP || out == Direction::UP);
         bool dir_down = (in == Direction::DOWN || out == Direction::DOWN);
+        bool forb_up = (forb_1 == Direction::UP || forb_2 == Direction::UP);
+        bool forb_down = (forb_2 == Direction::DOWN || forb_2 == Direction::DOWN);
 
-        if (dir_up && dir_down) {
+        if (dir_up && dir_down && !forb_up && !forb_down) {
             ui::move_cursor_up(2);
             ui::move_cursor_right(3);
             ui::move_cursor_left(3);
@@ -382,7 +427,7 @@ void Field::print_row_separator(int y) const {
             ui::move_cursor_down(2);
             ui::move_cursor_left(3);
             std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
-        } else if (dir_up) {
+        } else if (dir_up && !forb_up) {
             ui::move_cursor_up(2);
             ui::move_cursor_right(3);
             ui::move_cursor_left(3);
@@ -390,7 +435,7 @@ void Field::print_row_separator(int y) const {
             ui::move_cursor_down(2);
             ui::move_cursor_left(3);
             std::wcout << L"───";
-        } else if (dir_down) {
+        } else if (dir_down && !forb_down) {
             std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
         } else {
             std::wcout << L"───";

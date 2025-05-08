@@ -28,8 +28,8 @@ void ui::print_rules(int field_height) {
         GREEN     L"║   " RESET_COLOUR L"1. Draw a single loop through cell centers.          " GREEN L"║",
         GREEN     L"║   " RESET_COLOUR L"2. The loop must not cross or overlap itself.        " GREEN L"║",
         GREEN     L"║   " RESET_COLOUR L"3. The loop cannot reverse direction.                " GREEN L"║",
-        GREEN     L"║   " RESET_COLOUR L"4. ● Must turn and go straight before & after.       " GREEN L"║",
-        GREEN     L"║   " RESET_COLOUR L"5. ○ Must go straight and turn before or after.      " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"4. ○ Must turn and go straight before & after.       " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"5. ● Must go straight and turn before or after.      " GREEN L"║",
         GREEN     L"║   " RESET_COLOUR L"6. The loop must pass through all circles.           " GREEN L"║",
         GREEN     L"║   " RESET_COLOUR L"7. The loop must form a closed cycle.                " GREEN L"║",
         GREEN     L"╚════════════════════════════════════════════════════════╝" RESET_COLOUR
