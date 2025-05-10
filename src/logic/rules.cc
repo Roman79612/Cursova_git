@@ -84,14 +84,20 @@ void Rules::force_through_path(Field& field, Graph& graph, Cell& cell, Direction
     graph.add_edge(cell, prev);
 }
 
-void Rules::force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Direction dir) { //ДОРОБИТЬ
-    int width = field.get_width() - 1;
-    int height = field.get_height() - 1;
+/* ---------------------------------------------------------------------[<]-
+ Function: Rules::force_ban_perpendicular
+ Synopsis: Ban a path through the specified cell in the given perpendicular direction, using the graph.
+ ---------------------------------------------------------------------[>]*/
+void Rules::force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Direction dir) {
+    int width = field.get_width();
+    int height = field.get_height();
+
     for (Direction perp_dir : DirectionHelper::get_perpendicular(dir)) {
         auto [dx, dy] = DirectionHelper::get_delta(perp_dir);
         int px = cell.get_x() + dx;
         int py = cell.get_y() + dy;
-        if (px < 1 || py < 1 || px > width || py > height) {
+
+        if (px < 0 || py < 0 || px >= width || py >= height) {
             continue;
         }
         Cell& perp = field.get_cell(px, py);
@@ -194,10 +200,10 @@ void Rules::apply_white_edge_rule(Field& field, Graph& graph) {
 
         if (x == 0 || x == width - 1) {
             force_through_path(field, graph, cell, Direction::DOWN);
-            force_ban_perpendicular(field, graph, cell, Direction::DOWN); //ДОРОБИТЬ
+            force_through_path(field, graph, cell, Direction::UP);
         } else if (y == 0 || y == height - 1) {
             force_through_path(field, graph, cell, Direction::RIGHT);
-            force_ban_perpendicular(field, graph, cell, Direction::RIGHT);  //ДОРОБИТЬ
+            force_through_path(field, graph, cell, Direction::LEFT);
         } else {
             continue;
         }
@@ -440,8 +446,8 @@ void Rules::apply_white_border_pair_rule(Field& field, Graph& graph) {
                 continue;
             }
 
-            graph.add_edge(cell, neighbor);
             if (is_on_border(nx, ny, width, height)) {
+                graph.add_edge(cell, neighbor);
                 if (y == 0 && ny == 0) {
                     apply_turn_for_top_border(field, graph, cell, neighbor);
                 } else if (y == height - 1 && ny == height - 1) {
@@ -541,11 +547,8 @@ void Rules::enforce_white_triplets(Field& field, Graph& graph) {
                 Direction perp_dir = perp_dirs.front();
 
                 force_through_path(field, graph, cell, perp_dir);
-                force_ban_perpendicular(field, graph, cell, perp_dir);//ДОРОБИТЬ
                 force_through_path(field, graph, neighbor_1, perp_dir);
-                force_ban_perpendicular(field, graph, neighbor_1, perp_dir);//ДОРОБИТЬ
                 force_through_path(field, graph, neighbor_2, perp_dir);
-                force_ban_perpendicular(field, graph, neighbor_2, perp_dir);//ДОРОБИТЬ
             }
         }
     }

@@ -19,7 +19,7 @@
 
 /* ----------------------------------------------------------------------[<]-
     Function: print_rules
-    Synopsis: Prints the rules of the game in a formatted box.
+    Synopsis: Prints the rules of the game in a formatted box close to field.
 -------------------------------------------------------------------------[>]*/
 void ui::print_rules(int field_height) {
     const std::vector<std::wstring> rules_box = {
@@ -42,6 +42,78 @@ void ui::print_rules(int field_height) {
     ui::move_cursor_up(top_indent);
 
     for (const auto& line : rules_box) {
+        ui::move_cursor_right(right_indent);
+        std::wcout << line << std::endl;
+    }
+
+    ui::move_cursor_down(bottom_indent);
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: show_rules
+    Synopsis: Prints the rules of the game in a formatted box on centre terminal.
+-------------------------------------------------------------------------[>]*/
+void ui::show_rules() {
+    const std::vector<std::wstring> rules_box = {
+        GREEN     L"╔════════════════════════════════════════════════════════╗",
+        GREEN     L"║                         " RED BOLD L"MASYU RULES" RESET_COLOUR GREEN L"                    ║",
+        GREEN     L"║   " RESET_COLOUR L"1. Draw a single loop through cell centers.          " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"2. The loop must not cross or overlap itself.        " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"3. The loop cannot reverse direction.                " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"4. ○ Must turn and go straight before & after.       " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"5. ● Must go straight and turn before or after.      " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"6. The loop must pass through all circles.           " GREEN L"║",
+        GREEN     L"║   " RESET_COLOUR L"7. The loop must form a closed cycle.                " GREEN L"║",
+        GREEN     L"╚════════════════════════════════════════════════════════╝" RESET_COLOUR
+    };
+
+    int terminal_height = ui::get_terminal_height();
+    int terminal_width = ui::get_terminal_width();
+    int top_indent = (terminal_height + HEIGHT_MENU_BOX) / 2;
+    int right_indent = (terminal_width - WIDTH_MENU_BOX) / 2;
+    int bottom_indent = top_indent - HEIGHT_MENU_BOX;
+    
+    ui::print_new_line(terminal_height);
+    ui::move_cursor_up(top_indent);
+
+    for (const auto& line : rules_box) {
+        ui::move_cursor_right(right_indent);
+        std::wcout << line << std::endl;
+    }
+
+    ui::move_cursor_down(bottom_indent);
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: print_menu
+    Synopsis: Prints the menu of the game in a formatted box.
+-------------------------------------------------------------------------[>]*/
+void ui::print_menu() {
+    const std::vector<std::wstring> menu_box = {
+        GREEN L"╔════════════════════════════════════════════════════════╗",
+        GREEN L"║                       " RED BOLD L"USERS MENU" RESET_COLOUR GREEN L"                       ║",
+        GREEN L"║                                                        ║",
+        GREEN L"║                 " RESET_COLOUR L"1. Display all fields" RESET_COLOUR GREEN L"                  ║",
+        GREEN L"║                 " RESET_COLOUR L"2. Display field by number" RESET_COLOUR GREEN L"             ║",
+        GREEN L"║                 " RESET_COLOUR L"3. Create a custom field" RESET_COLOUR GREEN L"               ║",
+        GREEN L"║                 " RESET_COLOUR L"4. Show rules" RESET_COLOUR GREEN L"                          ║",
+        GREEN L"║                 " RESET_COLOUR L"5. Exit the program" RESET_COLOUR GREEN L"                    ║",
+        GREEN L"║                                                        ║",
+        GREEN L"║               " RESET_COLOUR L"By default there are " BOLD YELLOW L"7" RESET_COLOUR L" fields" GREEN L"            ║",
+        GREEN L"║                                                        ║",
+        GREEN L"╚════════════════════════════════════════════════════════╝" RESET_COLOUR
+    };    
+
+    int terminal_height = ui::get_terminal_height();
+    int terminal_width = ui::get_terminal_width();
+    int top_indent = (terminal_height + HEIGHT_MENU_BOX) / 2;
+    int right_indent = (terminal_width - WIDTH_MENU_BOX) / 2;
+    int bottom_indent = top_indent - HEIGHT_MENU_BOX;
+    
+    ui::print_new_line(terminal_height);
+    ui::move_cursor_up(top_indent);
+
+    for (const auto& line : menu_box) {
         ui::move_cursor_right(right_indent);
         std::wcout << line << std::endl;
     }
@@ -192,4 +264,49 @@ void ui::backspace(int lines) {
         std::wcout << L"\x1b[1D" << L' ' << L"\x1b[1D";
     }
     std::wcout.flush();
+}
+
+/* ----------------------------------------------------------------------[<]-
+Function: get_user_choice
+Synopsis: Prompts the user to enter a number between 1 and max (inclusive).
+-------------------------------------------------------------------------[>]*/
+int ui::get_user_choice(int max) {
+    int choice = -1;
+    std::wstring input;
+
+    while (true) {
+        std::wcout << L"Enter your choice [1-" << max << L"]: ";
+        std::getline(std::wcin, input);
+    
+        std::wstringstream ss(input);
+        int num;
+        if ((ss >> num) && ss.eof() && num >= 1 && num <= max) {
+            choice = num;
+            break;
+        }
+        std::wcout << L"Invalid input. Please enter a number from 1 to " << max << L".\n";
+    }
+    
+    return choice;
+}
+
+/* ----------------------------------------------------------------------[<]-
+Function: get_user_coordinate
+Synopsis: Prompts the user to enter two integers (x y) representing
+-------------------------------------------------------------------------[>]*/
+std::pair<int, int> ui::get_user_coordinate(int width, int height) {
+    int x = -1, y = -1;
+    std::wstring input;
+    
+    while (true) {
+        std::wcout << L"Enter (int int): ";
+        std::getline(std::wcin, input);
+    
+        std::wstringstream ss(input);
+        if ((ss >> x >> y) && ss.eof() && x >= 0 && x < width - 1 && y >= 0 && y < height - 1) {
+            break;
+        }
+    std::wcout << L"Invalid coordinates. Please enter two numbers between:\n" << L"x ∈ [0, " << (width - 1) << L"], y ∈ [0, " << (height - 1) << L"]\n";
+}
+    return {x, y};
 }

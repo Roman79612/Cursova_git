@@ -16,15 +16,120 @@
 #include "logic_headers/solver.h"
 #include "utils/ui.h"
 
+void create_field_from_user();
+void print_all_fields();
+void print_field_by_number();
+void end_program();
+
 int main() {
     setlocale(LC_ALL, "en_US.UTF-8");
     ui::print_centered_title(L"Welcome to Masyu Puzzle Solver!");
     ui::sleep_for_seconds(2);
 
+    while (true) {
+        ui::print_menu();
+        int choice = ui::get_user_choice(5);
+        switch (choice) {
+            case 1:
+                print_all_fields();
+                break;
+            case 2: {
+                print_field_by_number();
+                break;
+            }
+            case 3:
+                create_field_from_user();
+                break;
+            case 4:
+                ui::show_rules();
+                ui::sleep_for_seconds(5);
+                break;
+            case 5:
+                end_program();
+                break;
+            default:
+                std::wcout << "Invalid choice number of menu...";
+                break;
+        }        
+        if (choice == 5) break;
+    }
+
+    return 0;
+}
+
+/* ----------------------------------------------------------------------[<]-
+ Function:   create_field_from_user
+ Synopsis:   User to create a field, add cells, and choose the type for each cell.
+-------------------------------------------------------------------------[>]*/
+void create_field_from_user() {
+	Field user_field;
+	int width = 5, height = 5;
+	
+	std::wcout << L"Enter the width and height of the field at least \"5 5\". ";
+	std::pair<int, int> size = ui::get_user_coordinate(21, 21);
+    if (size.first < 5 || size.second < 5) {
+        std::wcout << "Your size was less than 5 5" << std::endl; 
+    } else {
+        width = size.first;
+        height = size.second;
+    }
+	
+	try {
+		user_field.init(width, height);
+	} catch (const std::invalid_argument& e) {
+		std::wcerr << L"Error initializing the field: " << e.what() << std::endl;
+		return;
+	}
+
+	int num_cells = 0;
+	std::wcout << L"Enter the number of cells you want to set: ";
+	num_cells = ui::get_user_choice((width * height) / 2);
+
+	for (int i = 0; i < num_cells; ++i) {
+		std::pair<int, int> coord = ui::get_user_coordinate(width, height);
+		if (coord.first == -1 || coord.second == -1) {
+			std::wcerr << L"Invalid coordinate input. Skipping cell.\n";
+			continue;
+		}
+
+		std::wcout << L"Enter cell type for (" << coord.first << L", " << coord.second << L")\n";
+		std::wcout << L"1. White\n2. Black\nYour choice: ";
+		int cell_type = ui::get_user_choice(2);
+		
+        if (cell_type == 1) {
+			user_field.set_cell(Cell(coord.first, coord.second, CellType::WHITE));
+    	} else if (cell_type == 2) {
+			user_field.set_cell(Cell(coord.first, coord.second, CellType::BLACK));
+		} else {
+			std::wcerr << L"Invalid choice. Please enter 1 for White or 2 for Black.\n";
+		}
+	}
+
+	user_field.print_field();
+    ui::sleep_for_seconds(2);
+
+	try {
+		if (user_field.is_initialized()) {
+			Solver user_solver(user_field);
+			if (user_solver.solve()) {
+				ui::print_centered_title_half(L"Solution for your field is found:");
+				user_field.print_field();
+				ui::print_rules(user_field.get_height());
+			} else {
+				ui::print_centered_title(L"No solution found for your field");
+			}
+		}
+	} catch (const std::exception& e) {
+		std::wcerr << L"Error solving the field: " << e.what() << std::endl;
+	}
+    ui::sleep_for_seconds(2);
+}
+
 /* ---------------------------------------------------------------------[<]-
     Field 1:
     10x10 field with no initial cells set.
  ---------------------------------------------------------------------[>]*/
+void print_field_1() {
     ui::print_centered_title_half(L"Field 1: Empty field");
 
     Field field_1;
@@ -38,21 +143,6 @@ int main() {
     field_1.print_field();
     ui::print_rules(field_1.get_height());
     ui::sleep_for_seconds(2);
-
-    try {
-        field_1.set_cell(Cell(0, 6, CellType::WHITE));
-        field_1.set_cell(Cell(0, 7, CellType::WHITE));
-        field_1.set_cell(Cell(4, 0, CellType::WHITE));
-        field_1.set_cell(Cell(5, 0, CellType::WHITE));
-        field_1.set_cell(Cell(4, 9, CellType::WHITE));
-        field_1.set_cell(Cell(5, 9, CellType::WHITE));
-        field_1.set_cell(Cell(9, 4, CellType::WHITE));
-        field_1.set_cell(Cell(9, 3, CellType::WHITE));
-    } catch (const std::invalid_argument& e) {
-        std::wcerr << L"Error setting cell in field 2: " << e.what() << std::endl;
-    } catch (const std::out_of_range& e) {
-        std::wcerr << L"Error setting coordinates field 2: " << e.what() << std::endl;
-    }
 
     try {
         if (field_1.is_initialized()) {
@@ -70,6 +160,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 2 (Task from example):
@@ -77,6 +168,7 @@ int main() {
     The task is to find a solution for this field.
     7 black dots and 13 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_2() {
     ui::print_centered_title_half(L"Field 2 (Task from example)");
 
     Field field_2;
@@ -135,6 +227,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 3 (Task 1):    
@@ -142,6 +235,7 @@ int main() {
     The task is to find a solution for this field.
     18 black dots and 10 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_3() {
     ui::print_centered_title_half(L"Field 3: Task 1");
 
     Field field_3;
@@ -208,6 +302,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 4 (Task 2):
@@ -215,6 +310,7 @@ int main() {
     The task is to find a solution for this field.
     9 black dots and 24 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_4() {
     ui::print_centered_title_half(L"Field 4: Task 2");
 
     Field field_4;
@@ -286,6 +382,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 5 (Task 3):
@@ -293,6 +390,7 @@ int main() {
     The task is to find a solution for this field.
     8 black dots and 20 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_5() {
     ui::print_centered_title_half(L"Field 5: Task 3");
 
     Field field_5;
@@ -358,6 +456,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 6:
@@ -365,6 +464,7 @@ int main() {
     The task is to find a solution for this field.
     15 black dots and 27 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_6() {
     ui::print_centered_title_half(L"Field 6: Task 4");
 
     Field field_6;
@@ -444,6 +544,7 @@ int main() {
     }
 
     ui::sleep_for_seconds(2);
+}
 
 /* ---------------------------------------------------------------------[<]- 
     Field 7:
@@ -451,6 +552,7 @@ int main() {
     The task is to find a solution for this field.
     36 black dots and 36 white dots are set.
 ---------------------------------------------------------------------[>]-*/
+void print_field_7() {
     ui::print_centered_title_half(L"Field 7: Task 5");
 
     Field field_7;
@@ -560,15 +662,63 @@ int main() {
     }
 
     ui::sleep_for_seconds(4);
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: print_all_fields
+    Synopsis: Prints display all of fields.
+-------------------------------------------------------------------------[>]*/
+void print_all_fields() {
+    print_field_1();
+    print_field_2();
+    print_field_3();
+    print_field_4();
+    print_field_5();
+    print_field_6();
+    print_field_7(); 
+}
+
+/* ----------------------------------------------------------------------[<]-
+    Function: print_field_by_number
+    Synopsis: Prints the field by number.
+-------------------------------------------------------------------------[>]*/
+void print_field_by_number() {
+    int number = ui::get_user_choice(7);
+    switch(number) {
+        case 1:
+            print_field_1();
+            break;
+        case 2:
+            print_field_2();
+            break;
+        case 3:
+            print_field_3();
+            break;
+        case 4:
+            print_field_4();
+            break;
+        case 5:
+            print_field_5();
+            break;
+        case 6:
+            print_field_6();
+            break;
+        case 7:
+            print_field_7();
+            break;
+        default:
+            std::wcout << L"Invalid field number. Please choose from 1 to 7.\n";
+            break;
+    }
+}
 
 /* ---------------------------------------------------------------------[<]- 
     End of program:
     Print exit message and wait for a few seconds before exiting.   
 ---------------------------------------------------------------------[>]-*/
+void end_program() {
     ui::print_centered_title(L"End of Masyu Puzzle Solver");
     ui::sleep_for_seconds(2);
     ui::print_centered_title(L"Exiting...");
     ui::sleep_for_seconds(1);
-
-    return 0;
 }

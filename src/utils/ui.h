@@ -23,15 +23,20 @@
 
 #define WIDTH_RULES_BOX 58
 #define HEIGHT_RULES_BOX 10
+#define WIDTH_MENU_BOX 56
+#define HEIGHT_MENU_BOX 11
 #define HEIGHT_TITLE 4
 
 #define RESET_COLOUR "\x1b[0m"
+#define YELLOW "\x1b[33m"
 #define GREEN "\x1b[32m"
 #define RED "\x1b[31m"
 #define BOLD "\x1b[1m"
 
 namespace ui {
     void print_rules(int field_height);
+    void show_rules();
+    void print_menu();
     void print_centered_title_half(const std::wstring& text);
     void print_centered_title(const std::wstring& text);
     void print_separator_half();
@@ -46,6 +51,8 @@ namespace ui {
     void move_cursor_end();
     void print_new_line(int lines);
     void backspace(int lines);
+    int get_user_choice(int max);
+    std::pair<int, int> get_user_coordinate(int width, int height);
 }
 
 #endif // UI_H
