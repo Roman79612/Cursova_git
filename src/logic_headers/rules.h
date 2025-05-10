@@ -24,8 +24,13 @@ namespace Rules {
     bool is_on_border(int x, int y, int width, int height);
     bool is_near_border(int x, int y, int width, int height);
     void force_straight_path(Field& field, Graph& graph, Cell& cell, Direction dir);
-    void force_through_path(Field& field, Graph& graph, Cell& cell, Direction dir );
-    void apply_white_pair_connection(Field& field, Graph& graph, Cell& c1, Cell& c2, Direction dir);
+    void force_through_path(Field& field, Graph& graph, Cell& cell, Direction dir);
+    void force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Direction dir);
+    void turn_in_next_cell(Field& field, Graph& graph, Cell& from_cell, Direction move_dir, Direction turn_dir);
+    void apply_turn_for_left_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);
+    void apply_turn_for_right_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);
+    void apply_turn_for_top_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);
+    void apply_turn_for_bottom_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);
 
     // Pattern rules
     void apply_black_corner_rule(Field& field, Graph& graph);
@@ -36,6 +41,7 @@ namespace Rules {
     void apply_adjacent_black_near_edge_rule(Field& field, Graph& graph);
     void apply_white_border_pair_rule(Field& field, Graph& graph);
     void enforce_white_triplets(Field& field, Graph& graph);
+    void apply_combination_rule(Field& field, Graph& graph);
 }
 
 #endif // RULES_H

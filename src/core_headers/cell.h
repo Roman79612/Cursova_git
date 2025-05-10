@@ -55,6 +55,7 @@ public:
     int get_y() const;
     CellType get_type() const;
     wchar_t get_symbol() const;
+    wchar_t get_line() const;
     Direction get_dir_from() const;
     Direction get_dir_to() const;
     Direction get_forb_dir1() const;

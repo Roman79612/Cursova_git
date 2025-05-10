@@ -15,35 +15,87 @@
  Function: Graph
  Synopsis: Constructor that initializes reference to Field object.
  ---------------------------------------------------------------------[>]-*/
-Graph::Graph(Field &field) : field(field) {
-    initialize_neighbors();
+Graph::Graph(Field &field) : field(field) {}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: add_edge
+ Synopsis: Adds an edge between two cells and marks as YES.
+ ---------------------------------------------------------------------[>]-*/
+void Graph::add_edge(Cell &a, Cell &b) {
+    if (is_connected(a, b)) return;
+
+    int dx = b.get_x() - a.get_x();
+    int dy = b.get_y() - a.get_y();
+    Direction dir = DirectionHelper::get_dir_delta(dx, dy);
+    Direction opp = DirectionHelper::opposite(dir);
+
+    if ((a.get_forb_dir1() == dir || a.get_forb_dir2() == dir) || (b.get_forb_dir1() == opp || b.get_forb_dir2() == opp)) {
+        return;
+    }
+
+    a.set_dir_to(dir);
+    b.set_dir_from(opp);
+
+    set_edge(a, b, EdgeState::YES);
 }
 
 /* ---------------------------------------------------------------------[<]-
- Function: initialize_neighbors
- Synopsis: Ініціалізує всі сусіди для кожної клітинки на полі.
+ Function: remove_edge
+ Synopsis: Removes edge and marks as NO (banned).
  ---------------------------------------------------------------------[>]-*/
-void Graph::initialize_neighbors() {
-    for (int y = 0; y < field.get_height(); ++y) {
-        for (int x = 0; x < field.get_width(); ++x) {
-            Cell* cell = field.get_cell_ptr(x, y);
-            if (!cell) continue;
+void Graph::remove_edge(Cell &a, Cell &b) {
+    int dx = b.get_x() - a.get_x();
+    int dy = b.get_y() - a.get_y();
+    Direction dir = DirectionHelper::get_dir_delta(dx, dy);
+    Direction opp = DirectionHelper::opposite(dir);
 
-            std::vector<Cell*> neighbors = field.get_neighbors(*cell);
-            for (Cell* neighbor : neighbors) {
-                if (neighbor) {
-                    adjacency[cell].insert(neighbor);
-                }
-            }
-        }
+    if (a.get_forb_dir1() != dir && a.get_forb_dir2() != dir)
+        a.set_forbidden_dir(dir);
+    if (b.get_forb_dir1() != opp && b.get_forb_dir2() != opp)
+        b.set_forbidden_dir(opp);
+
+    set_edge(a, b, EdgeState::NO);
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: are_connected
+ Synopsis: Checks if two cells are currently connected.
+ ---------------------------------------------------------------------[>]-*/
+bool Graph::is_connected(const Cell& a, const Cell& b) {
+    auto key = std::make_pair(const_cast<Cell*>(&a), const_cast<Cell*>(&b));
+    auto it = edge_matrix.find(key);
+    return it != edge_matrix.end() && it->second == EdgeState::YES;
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: get_neighbor
+ Synopsis: Returns pointer to neighbor cell in the given direction, or nullptr if none.
+ ---------------------------------------------------------------------[>]*/
+Cell& Graph::get_neighbor(Cell &a, Direction dir) {
+    int ax = a.get_x(), ay = a.get_y();
+    int nx = ax + DirectionHelper::get_dx(dir);
+    int ny = ay + DirectionHelper::get_dy(dir);
+
+    if (!field.in_bounds(nx, ny)) {
+        throw std::out_of_range("Neighbor out of bounds");
     }
+    return field.get_cell(nx, ny);
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: set_edge
+ Synopsis: Sets the state of an edge between two cells (YES / NO / UNKNOWN).
+ ---------------------------------------------------------------------[>]-*/
+void Graph::set_edge(Cell& a, Cell& b, EdgeState state) {
+    edge_matrix[{&a, &b}] = state;
+    edge_matrix[{&b, &a}] = state;
 }
 
 /* ---------------------------------------------------------------------[<]-
  Function: get_edge
  Synopsis: Returns the state of the edge between two cells.
  ---------------------------------------------------------------------[>]-*/
-EdgeState Graph::get_edge(Cell &a, Cell &b) const {
+EdgeState Graph::get_state(Cell &a, Cell &b) const {
     auto key = std::make_pair(&a, &b);
     auto it = edge_matrix.find(key);
     if (it != edge_matrix.end()) {
@@ -51,92 +103,3 @@ EdgeState Graph::get_edge(Cell &a, Cell &b) const {
     }
     return EdgeState::UNKNOWN;
 }
-
-/* ---------------------------------------------------------------------[<]-
- Function: get_neighbor
- Synopsis: Returns pointer to neighbor cell in the given direction, or nullptr if none.
- ---------------------------------------------------------------------[>]*/
-Cell& Graph::get_neighbor(Cell& cell, Direction dir) const {
-    std::vector<Cell*> neighbors = field.get_neighbors(cell);
-
-    for (Cell* neighbor : neighbors) {
-        if (!neighbor) continue;
-
-        int dx = neighbor->get_x() - cell.get_x();
-        int dy = neighbor->get_y() - cell.get_y();
-
-        if (DirectionHelper::get_dir_delta(dx, dy) == dir) {
-            return *neighbor;
-        }
-    }
-
-    throw std::runtime_error("Neighbor in specified direction not found.");
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: are_connected
- Synopsis: Checks if two cells are currently connected.
- ---------------------------------------------------------------------[>]-*/
-bool Graph::are_connected(const Cell &a, const Cell &b) {
-    auto it = adjacency.find(const_cast<Cell *>(&a));
-    if (it != adjacency.end()) {
-        return it->second.count(const_cast<Cell *>(&b)) > 0;
-    }
-    return false;
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: add_edge
- Synopsis: Adds an edge between two cells and marks as YES.
- ---------------------------------------------------------------------[>]-*/
-void Graph::add_edge(Cell &a, Cell &b) {
-    int dx = b.get_x() - a.get_x();
-    int dy = b.get_y() - a.get_y();
-    Direction dir = DirectionHelper::get_dir_delta(dx, dy);
-    Direction opp = DirectionHelper::opposite(dir);
-
-    if ((dir != a.get_forb_dir1()) && (opp != a.get_forb_dir2())) {
-        a.set_dir_to(dir);
-        b.set_dir_from(opp);
-
-        edge_matrix[{&a, &b}] = EdgeState::YES;
-        edge_matrix[{&b, &a}] = EdgeState::YES;
-    }   
-}
-
-
-/* ---------------------------------------------------------------------[<]-
- Function: remove_edge
- Synopsis: Removes edge and marks as NO (banned).
- ---------------------------------------------------------------------[>]-*/
-void Graph::remove_edge(Cell &a, Cell &b) {
-    edge_matrix[{&a, &b}] = EdgeState::NO;
-    edge_matrix[{&b, &a}] = EdgeState::NO;
-
-    int dx = b.get_x() - a.get_x();
-    int dy = b.get_y() - a.get_y();
-    Direction dir = DirectionHelper::get_dir_delta(dx, dy);
-    Direction opp = DirectionHelper::opposite(dir);
-    
-    a.set_forbidden_dir(dir);
-    b.set_forbidden_dir(opp);
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: ban_edge
- Synopsis: Forbids (removes) edge between two adjacent cells.
- ---------------------------------------------------------------------[>]-*/
-void Graph::ban_edge(Cell &a, Cell &b) {
-    EdgeState state = get_edge(a, b);
-    if (state == EdgeState::YES) {
-        remove_edge(a, b);
-        return;
-    } else if (state == EdgeState::NO) {
-        remove_edge(a, b);
-        return;
-    } else {
-        remove_edge(a, b);
-        return;
-    }
-}
-

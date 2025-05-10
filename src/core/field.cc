@@ -368,6 +368,10 @@ void Field::print_row_cells(int y) const {
         bool dir_right = (in == Direction::RIGHT || out == Direction::RIGHT);
         bool is_dot = (type == CellType::WHITE || type == CellType::BLACK);
 
+        if (type == CellType::LINE || (type == CellType::EMPTY && in != Direction::NONE && out != Direction::NONE)) {
+            symbol = cell.get_line();
+        }
+
         if (cell.is_line()) {
             if (dir_left) {
                 ui::backspace(1);

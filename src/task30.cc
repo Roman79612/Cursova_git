@@ -40,6 +40,21 @@ int main() {
     ui::sleep_for_seconds(2);
 
     try {
+        field_1.set_cell(Cell(0, 6, CellType::WHITE));
+        field_1.set_cell(Cell(0, 7, CellType::WHITE));
+        field_1.set_cell(Cell(4, 0, CellType::WHITE));
+        field_1.set_cell(Cell(5, 0, CellType::WHITE));
+        field_1.set_cell(Cell(4, 9, CellType::WHITE));
+        field_1.set_cell(Cell(5, 9, CellType::WHITE));
+        field_1.set_cell(Cell(9, 4, CellType::WHITE));
+        field_1.set_cell(Cell(9, 3, CellType::WHITE));
+    } catch (const std::invalid_argument& e) {
+        std::wcerr << L"Error setting cell in field 2: " << e.what() << std::endl;
+    } catch (const std::out_of_range& e) {
+        std::wcerr << L"Error setting coordinates field 2: " << e.what() << std::endl;
+    }
+
+    try {
         if (field_1.is_initialized()) {
             Solver solver_1(field_1);
             if (solver_1.solve()) {

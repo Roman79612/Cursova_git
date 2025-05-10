@@ -13,6 +13,7 @@
 #include "../core_headers/field.h"
 #include "../core_headers/cell.h"
 #include "../core_headers/direction.h"
+#include "../utils/ui.h"
 #include <map>
 #include <set>
 #include <utility>
@@ -25,17 +26,14 @@ public:
 
     void add_edge(Cell& a, Cell& b);
     void remove_edge(Cell& a, Cell& b);
-    void ban_edge(Cell& a, Cell& b);
-    EdgeState get_edge(Cell& a, Cell& b) const;
-    bool are_connected(const Cell& a, const Cell& b);
-    Cell& get_neighbor(Cell& cell, Direction dir) const;
+    bool is_connected(const Cell& a, const Cell& b);
+    Cell& get_neighbor(Cell& cell, Direction dir);
+    void set_edge(Cell& a, Cell& b, EdgeState state);
+    EdgeState get_state(Cell& a, Cell& b) const;
 
 private:
     Field& field;
-    std::map<Cell*, std::set<Cell*>> adjacency;
     std::map<std::pair<Cell*, Cell*>, EdgeState> edge_matrix;
-
-    void initialize_neighbors();
 };
 
 #endif // GRAPH_H

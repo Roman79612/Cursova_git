@@ -47,13 +47,14 @@ bool Solver::solve() {
  ---------------------------------------------------------------------[>]*/
 void Solver::apply_deduction_rules() {
     Rules::apply_black_corner_rule(field, graph);
+    Rules::apply_white_border_pair_rule(field, graph);
 	Rules::apply_white_edge_rule(field, graph);
 	Rules::apply_black_edge_rule(field, graph);
     Rules::apply_black_near_border_rule(field, graph);
     Rules::apply_adjacent_black_rule(field, graph);
     Rules::apply_adjacent_black_near_edge_rule(field, graph);
-    Rules::apply_white_border_pair_rule(field, graph);
     Rules::enforce_white_triplets(field, graph);
+    Rules::apply_combination_rule(field, graph);
 }
 
 /* ---------------------------------------------------------------------[<]-

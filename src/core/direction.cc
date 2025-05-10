@@ -56,7 +56,6 @@ std::pair<int, int> DirectionHelper::get_delta(Direction dir) {
         case Direction::DOWN:  return {1, 0};
         case Direction::LEFT:  return {0, -1};
         case Direction::RIGHT: return {0, 1};
-        case Direction::NONE:  return {0, 0};
         default:               return {0, 0};
     }
 }

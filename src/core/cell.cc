@@ -100,6 +100,9 @@ void Cell::set_dir_from(Direction dir) {
     }
 
     dir_from = dir;
+    if (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE) {
+        type = CellType::LINE;
+    }
     symbol = get_symbol();
 }
 
@@ -111,8 +114,11 @@ void Cell::set_dir_to(Direction dir) {
     if (!DirectionHelper::is_valid_direction(dir)) {
         throw std::invalid_argument("Invalid direction for dir_to: " + std::to_string(static_cast<int>(dir)));
     }
-
+    
     dir_to = dir;
+    if (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE) {
+        type = CellType::LINE;
+    }
     symbol = get_symbol();
 }
 
@@ -156,41 +162,12 @@ CellType Cell::get_type() const {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: set_symbol
- Synopsis: Set the line symbol based on the entry and exit directions.
+ Function: get_symbol
+ Synopsis: Get the line symbol based on the entry and exit directions.
  ---------------------------------------------------------------------[>]-*/
 wchar_t Cell::get_symbol() const {
     if (type == CellType::LINE) {
-        if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
-            (dir_from == Direction::DOWN && dir_to == Direction::UP)) {
-            return L'│';
-        }
-
-        if ((dir_from == Direction::LEFT && dir_to == Direction::RIGHT) ||
-            (dir_from == Direction::RIGHT && dir_to == Direction::LEFT)) {
-            return L'─';
-        }
-
-        if ((dir_from == Direction::UP && dir_to == Direction::RIGHT) ||
-            (dir_from == Direction::RIGHT && dir_to == Direction::UP)) {
-            return L'└';
-        }
-
-        if ((dir_from == Direction::UP && dir_to == Direction::LEFT) ||
-            (dir_from == Direction::LEFT && dir_to == Direction::UP)) {
-            return L'┘';
-        }
-
-        if ((dir_from == Direction::DOWN && dir_to == Direction::RIGHT) ||
-            (dir_from == Direction::RIGHT && dir_to == Direction::DOWN)) {
-            return L'┌';
-        }
-
-        if ((dir_from == Direction::DOWN && dir_to == Direction::LEFT) ||
-            (dir_from == Direction::LEFT && dir_to == Direction::DOWN)) {
-            return L'┐';
-        }
-        return L'?';
+        return get_line();
     } else if (type == CellType::WHITE) {
         return L'●';
     } else if (type == CellType::BLACK) {
@@ -198,7 +175,18 @@ wchar_t Cell::get_symbol() const {
     } else if (type == CellType::EMPTY && (dir_from == Direction::NONE || dir_to == Direction::NONE)) {
         return L' ';
     } else if (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE) {
-        if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
+        return get_line();
+    } else {
+        return L'?';
+    }
+}
+
+/* ---------------------------------------------------------------------[<]- 
+ Function: get_line
+ Synopsis: Get the line symbol based on the entry and exit directions.
+ ---------------------------------------------------------------------[>]-*/
+ wchar_t Cell::get_line() const {
+    if ((dir_from == Direction::UP && dir_to == Direction::DOWN) ||
             (dir_from == Direction::DOWN && dir_to == Direction::UP)) {
             return L'│';
         }
@@ -228,10 +216,7 @@ wchar_t Cell::get_symbol() const {
             return L'┐';
         }
         return L'?';
-    } else {
-        return L'?';
-    }
-}
+ }
 
 /* ---------------------------------------------------------------------[<]- 
  Function: get_dir_from
@@ -318,8 +303,8 @@ bool Cell::is_white() const {
  Function: is_line
  Synopsis: Check if the cell is a line.
  ---------------------------------------------------------------------[>]-*/
-bool Cell::is_line() const {
-    return type == CellType::LINE;  
+ bool Cell::is_line() const {
+    return (type == CellType::LINE || (type == CellType::EMPTY && dir_from != Direction::NONE && dir_to != Direction::NONE));
 }
 
 /* ---------------------------------------------------------------------[<]- 
