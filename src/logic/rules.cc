@@ -379,8 +379,8 @@ void Rules::apply_adjacent_black_near_edge_rule(Field& field, Graph& graph) {
             Direction dir = DirectionHelper::get_dir_delta(dx, dy);
 
             if (dir == Direction::LEFT) {
-                force_through_path(field, graph, cell, Direction::DOWN);
-                force_through_path(field, graph, cell, Direction::UP);
+                force_straight_path(field, graph, cell, Direction::DOWN);
+                force_straight_path(field, graph, cell, Direction::UP);
                 graph.remove_edge(cell, neighbor_cell);
             } else if (dir == Direction::RIGHT) {
                 force_straight_path(field, graph, cell, Direction::LEFT);
