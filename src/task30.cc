@@ -133,15 +133,15 @@ void solve_field(Field& field) {
         if (field.is_initialized()) {
             Solver solver(field);
             if (solver.solve()) {
-                ui::print_centered_title_half(L"Solution for Field 1 is found:");
+                ui::print_centered_title_half(L"Solution for Field is found:");
                 field.print_field();
                 ui::print_rules(field.get_height());
             } else {
-                ui::print_centered_title(L"No solution found for Field 1");
+                ui::print_centered_title(L"No solution found for Field");
             }
         }
     } catch (const std::exception& e) {
-        std::wcerr << L"Error solving field 1: " << e.what() << std::endl;
+        std::wcerr << L"Error solving field: " << e.what() << std::endl;
     }
 }
 

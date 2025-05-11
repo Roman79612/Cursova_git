@@ -99,7 +99,7 @@ void ui::print_menu() {
         GREEN L"║                 " RESET_COLOUR L"4. Show rules" RESET_COLOUR GREEN L"                          ║",
         GREEN L"║                 " RESET_COLOUR L"5. Exit the program" RESET_COLOUR GREEN L"                    ║",
         GREEN L"║                                                        ║",
-        GREEN L"║               " RESET_COLOUR L"By default there are " BOLD YELLOW L"7" RESET_COLOUR L" fields" GREEN L"            ║",
+        GREEN L"║               " RESET_COLOUR L"By default there are " BOLD YELLOW L"5" RESET_COLOUR L" fields" GREEN L"            ║",
         GREEN L"║                                                        ║",
         GREEN L"╚════════════════════════════════════════════════════════╝" RESET_COLOUR
     };    

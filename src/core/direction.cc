@@ -52,10 +52,10 @@ Direction DirectionHelper::get_dir_delta(int dx, int dy) {
  ---------------------------------------------------------------------[>]*/
 std::pair<int, int> DirectionHelper::get_delta(Direction dir) {
     switch (dir) {
-        case Direction::UP:    return {-1, 0};
-        case Direction::DOWN:  return {1, 0};
-        case Direction::LEFT:  return {0, -1};
-        case Direction::RIGHT: return {0, 1};
+        case Direction::UP:    return {0, -1};
+        case Direction::DOWN:  return {0, 1};
+        case Direction::LEFT:  return {-1, 0};
+        case Direction::RIGHT: return {1, 0};
         default:               return {0, 0};
     }
 }
@@ -114,7 +114,7 @@ bool DirectionHelper::is_valid_direction(Direction dir) {
  Function: perpendicular
  Synopsis: Returns a vector of two perpendicular directions.
  ---------------------------------------------------------------------[>]*/
-std::vector<Direction> DirectionHelper::get_perpendicular(Direction dir) {
+std::pair<Direction, Direction> DirectionHelper::get_perpendicular(Direction dir) {
     switch (dir) {
         case Direction::UP:    return {Direction::LEFT, Direction::RIGHT};
         case Direction::DOWN:  return {Direction::LEFT, Direction::RIGHT};

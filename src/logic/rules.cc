@@ -56,52 +56,76 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
 }
 
 /* ---------------------------------------------------------------------[<]-
- Function: Rules::force_straight_path
+ Function: Rules::force_straight
  Synopsis: Forces a straight path in the specified direction using Graph.
  ---------------------------------------------------------------------[>]*/
-void Rules::force_straight_path(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    Cell& next = graph.get_neighbor(cell, dir);
-    Cell& after_next = graph.get_neighbor(next, dir);
+ void Rules::force_straight(Field& field, Graph& graph, Cell& cell, Direction dir) {
+    int x = cell.get_x();
+    int y = cell.get_y();
 
-    graph.add_edge(cell, next);
-    graph.add_edge(next, after_next);
+    try {
+        Cell& next = graph.get_neighbor(cell, dir);
+        int nx = next.get_x();
+        int ny = next.get_y();
+        graph.add_edge(cell, next);
 
-    if (next.get_type() == CellType::EMPTY) {
-        next.set_type(CellType::LINE);
+        Cell& after_next = graph.get_neighbor(next, dir);
+        int ax = after_next.get_x();
+        int ay = after_next.get_y();
+        graph.add_edge(next, after_next);
+
+        if (next.get_type() == CellType::EMPTY) {
+            next.set_type(CellType::LINE);
+        }
+
+    } catch (const std::exception& e) {
+        std::wcerr << L"[force_straight] Exception: " << e.what() << L"\n";
     }
 }
 
+
 /* ---------------------------------------------------------------------[<]-
- Function: Rules::force_through_path
+ Function: Rules::connect_with_next
  Synopsis: Forces a path through the specified cell in the given direction, using the graph.
  ---------------------------------------------------------------------[>]*/
-void Rules::force_through_path(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    Direction opp = DirectionHelper::opposite(dir);
-
-    Cell& next = graph.get_neighbor(cell, dir);
-    Cell& prev = graph.get_neighbor(cell, opp);
-    graph.add_edge(cell, next);
-    graph.add_edge(cell, prev);
+ void Rules::connect_with_next(Field& field, Graph& graph, Cell& cell, Direction dir) {
+    std::wcerr << L"[connect_with_next] Cell: (" << cell.get_x() << L"," << cell.get_y() << L"), Dir: " << DirectionHelper::to_string(dir) << L"\n";
+    try {
+        Cell& next = graph.get_neighbor(cell, dir);
+        graph.add_edge(cell, next);
+        if (next.get_type() == CellType::EMPTY && next.get_dir_to() != Direction::NONE && next.get_dir_from() != Direction::NONE) {
+            next.set_type(CellType::LINE);
+        }
+        Cell& prev = graph.get_neighbor(cell, DirectionHelper::opposite(dir));
+        if (prev.get_type() == CellType::EMPTY && prev.get_dir_to() != Direction::NONE && prev.get_dir_from() != Direction::NONE) {
+            prev.set_type(CellType::LINE);
+        }
+    } catch (const std::exception& e) {
+        std::wcerr << L"[connect_with_next] Error: " << e.what() << L"\n";
+    }
 }
 
 /* ---------------------------------------------------------------------[<]-
  Function: Rules::force_ban_perpendicular
  Synopsis: Ban a path through the specified cell in the given perpendicular direction, using the graph.
  ---------------------------------------------------------------------[>]*/
-void Rules::force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    int width = field.get_width();
-    int height = field.get_height();
+ void Rules::ban(Field& field, Graph& graph, Cell& cell, Direction dir) {
+    std::wcerr << L"[ban] Cell: (" << cell.get_x() << L"," << cell.get_y() << L"), Dir: " << DirectionHelper::to_string(dir) << L"\n";
+    std::pair<int, int> delta = DirectionHelper::get_delta(dir);
+    int nx = cell.get_x() + delta.first;
+    int ny = cell.get_y() + delta.second;
 
-    for (Direction perp_dir : DirectionHelper::get_perpendicular(dir)) {
-        auto [dx, dy] = DirectionHelper::get_delta(perp_dir);
-        int px = cell.get_x() + dx;
-        int py = cell.get_y() + dy;
+    cell.set_forbidden_dir(dir);
 
-        if (px < 0 || py < 0 || px >= width || py >= height) {
-            continue;
+    if (field.in_bounds(nx, ny)) {
+        try {
+            Cell& next = graph.get_neighbor(cell, dir);
+            graph.remove_edge(cell, next);
+        } catch (const std::exception& e) {
+            std::wcerr << L"[ban] Error: " << e.what() << L"\n";
         }
-        Cell& perp = field.get_cell(px, py);
-        graph.remove_edge(cell, perp);
+    } else {
+        std::wcerr << L"[ban] Out of bounds: (" << nx << L"," << ny << L")\n";
     }
 }
 
@@ -111,39 +135,52 @@ void Rules::force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Dire
               then connects that neighbor in the specified 'turn_dir' to simulate
               a required bent line. Skips if directions are equal or opposite.
  ------------------------------------------------------------------</Method>-*/
-void Rules::turn_in_next_cell(Field& field, Graph& graph, Cell& from_cell, Direction move_dir, Direction turn_dir) {
+ void Rules::turn_in_next_cell(Field& field, Graph& graph, Cell& from_cell, Direction move_dir, Direction turn_dir) {
     if (move_dir == turn_dir || DirectionHelper::opposite(move_dir) == turn_dir) return;
-    auto [dx, dy] = DirectionHelper::get_delta(move_dir);
-    int nx = from_cell.get_x() + dx;
-    int ny = from_cell.get_y() + dy;
+
+    int x = from_cell.get_x();
+    int y = from_cell.get_y();
+
+    std::wcerr << L"[turn_in_next_cell] From: (" << x << L"," << y << L") MoveDir: " << DirectionHelper::to_string(move_dir) << L", TurnDir: " << DirectionHelper::to_string(turn_dir) << L"\n";
+
+    std::pair<int, int> delta = DirectionHelper::get_delta(move_dir);
+    int nx = x + delta.first;
+    int ny = y + delta.second;
 
     if (!field.in_bounds(nx, ny)) {
-            return;
-    }
-
-    Direction opp = DirectionHelper::opposite(turn_dir);
-    auto [ox, oy] = DirectionHelper::get_delta(opp);
-    int fx = from_cell.get_x() + ox;
-    int fy = from_cell.get_y() + oy;
-    if (field.in_bounds(fx, fy)) {
-        Cell& forbidden = field.get_cell(fx, fy);
-        graph.remove_edge(from_cell, forbidden);
-    }
-
-    Cell& next = field.get_cell(nx, ny);
-    graph.add_edge(from_cell, next);
-
-    auto [tdx, tdy] = DirectionHelper::get_delta(turn_dir);
-    int tx = nx + tdx;
-    int ty = ny + tdy;
-
-    if (!field.in_bounds(tx, ty)) {
+        std::wcerr << L"[turn_in_next_cell] Move target out of bounds: (" << nx << L"," << ny << L")\n";
         return;
     }
 
-    Cell& bend = field.get_cell(tx, ty);
-    graph.add_edge(next, bend);
+    try {
+        Cell& next = graph.get_neighbor(from_cell, move_dir);
+        graph.add_edge(from_cell, next);
+
+        std::wcerr << L"[turn_in_next_cell] Connected: (" << x << L"," << y << L") -> (" << next.get_x() << L"," << next.get_y() << L")\n";
+
+        std::pair<int, int> delta_turn = DirectionHelper::get_delta(turn_dir);
+        int tx = nx + delta_turn.first;
+        int ty = ny + delta_turn.second;
+
+        if (!field.in_bounds(tx, ty)) {
+            std::wcerr << L"[turn_in_next_cell] Turn target out of bounds: (" << tx << L"," << ty << L")\n";
+            return;
+        }
+
+        Cell& turn = graph.get_neighbor(next, turn_dir);
+        graph.add_edge(next, turn);
+
+        std::wcerr << L"[turn_in_next_cell] Bend: (" << next.get_x() << L"," << next.get_y() << L") -> (" << turn.get_x() << L"," << turn.get_y() << L")\n";
+
+        Direction opp_turn = DirectionHelper::opposite(turn_dir);
+        next.set_forbidden_dir(move_dir);
+        next.set_forbidden_dir(opp_turn);
+
+    } catch (const std::exception& e) {
+        std::wcerr << L"[turn_in_next_cell] Error: " << e.what() << L"\n";
+    }
 }
+
 
 /* ---------------------------------------------------------------------[<]-
  Function: Rules::apply_black_corner_rule
@@ -162,18 +199,25 @@ void Rules::apply_black_corner_rule(Field& field, Graph& graph) {
         int y = cell.get_y();
 
         if (x == 0 && y == 0) {
-            force_straight_path(field, graph, cell, Direction::DOWN);
-            force_straight_path(field, graph, cell, Direction::RIGHT);
-
+            force_straight(field, graph, cell, Direction::RIGHT);
+            force_straight(field, graph, cell, Direction::DOWN);
+            ban(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::UP);
         } else if (x == width - 1 && y == 0) {
-            force_straight_path(field, graph, cell, Direction::DOWN);
-            force_straight_path(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::DOWN);
+            ban(field, graph, cell, Direction::RIGHT);
+            ban(field, graph, cell, Direction::UP);
         } else if (x == 0 && y == height - 1) {
-            force_straight_path(field, graph, cell, Direction::UP);
-            force_straight_path(field, graph, cell, Direction::RIGHT);
+            force_straight(field, graph, cell, Direction::RIGHT);
+            force_straight(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::DOWN);
         } else if (x == width - 1 && y == height - 1) {
-            force_straight_path(field, graph, cell, Direction::UP);
-            force_straight_path(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::RIGHT);
+            ban(field, graph, cell, Direction::DOWN);
         }
     }
 }
@@ -198,12 +242,52 @@ void Rules::apply_white_edge_rule(Field& field, Graph& graph) {
             continue;
         }
 
-        if (x == 0 || x == width - 1) {
-            force_through_path(field, graph, cell, Direction::DOWN);
-            force_through_path(field, graph, cell, Direction::UP);
-        } else if (y == 0 || y == height - 1) {
-            force_through_path(field, graph, cell, Direction::RIGHT);
-            force_through_path(field, graph, cell, Direction::LEFT);
+        if (x == 0) {
+            connect_with_next(field, graph, cell, Direction::UP);
+            connect_with_next(field, graph, cell, Direction::DOWN);
+            ban(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::RIGHT);
+            if (y == 1) {
+                turn_in_next_cell(field, graph, cell, Direction::UP, Direction::RIGHT);
+            } else if (y == width - 2) {
+                turn_in_next_cell(field, graph, cell, Direction::DOWN, Direction::RIGHT);
+            } else {
+                continue;
+            }
+        } else if (y == 0) {
+            connect_with_next(field, graph, cell, Direction::RIGHT);
+            connect_with_next(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::DOWN);
+            if (x == 1) {
+                turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::DOWN);
+            } else if (x == width - 2) {
+                turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::DOWN);
+            } else {
+                continue;
+            }
+        } else if (x == width - 1) {
+            connect_with_next(field, graph, cell, Direction::DOWN);
+            connect_with_next(field, graph, cell, Direction::UP);
+            if (y == 1) {
+                turn_in_next_cell(field, graph, cell, Direction::UP, Direction::LEFT);
+            } else if (y == width - 2) {
+                turn_in_next_cell(field, graph, cell, Direction::DOWN, Direction::LEFT);
+            } else {
+                continue;
+            }
+        } else if (y == height - 1) {
+            connect_with_next(field, graph, cell, Direction::RIGHT);
+            connect_with_next(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::DOWN);
+            if (x == 1) {
+                turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::UP);
+            } else if (x == width - 2) {
+                turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::UP);
+            } else {
+                continue;
+            }
         } else {
             continue;
         }
@@ -231,13 +315,17 @@ void Rules::apply_black_edge_rule(Field& field, Graph& graph) {
         }
 
         if (x == 0) {
-            force_straight_path(field, graph, cell, Direction::RIGHT);
+            force_straight(field, graph, cell, Direction::RIGHT);
+            ban(field, graph, cell, Direction::LEFT);
         } else if (x == width - 1) {
-            force_straight_path(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::RIGHT);
         } else if (y == 0) {
-            force_straight_path(field, graph, cell, Direction::DOWN);
+            force_straight(field, graph, cell, Direction::DOWN);
+            ban(field, graph, cell, Direction::UP);
         } else if (y == height - 1) {
-            force_straight_path(field, graph, cell, Direction::UP);
+            force_straight(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::DOWN);
         } else {
             continue;
         }
@@ -265,13 +353,17 @@ void Rules::apply_black_near_border_rule(Field& field, Graph& graph) {
         }
 
         if (x == 1) {
-            force_straight_path(field, graph, cell, Direction::RIGHT);
+            force_straight(field, graph, cell, Direction::RIGHT);
+            ban(field, graph, cell, Direction::LEFT);
         } else if (x == width - 2) {
-            force_straight_path(field, graph, cell, Direction::LEFT);
+            force_straight(field, graph, cell, Direction::LEFT);
+            ban(field, graph, cell, Direction::RIGHT);
         } else if (y == 1) {
-            force_straight_path(field, graph, cell, Direction::DOWN);
+            force_straight(field, graph, cell, Direction::DOWN);
+            ban(field, graph, cell, Direction::UP);
         } else if (y == height - 2) {
-            force_straight_path(field, graph, cell, Direction::UP);
+            force_straight(field, graph, cell, Direction::UP);
+            ban(field, graph, cell, Direction::DOWN);
         } else {
             continue;
         }
@@ -294,11 +386,11 @@ void Rules::apply_adjacent_black_rule(Field& field, Graph& graph) {
         int x = cell.get_x();
         int y = cell.get_y();
 
-        if (is_on_border(x, y, width, height) || is_near_border(x, y, width, height)) {
+        if (is_near_border(x, y, width, height)) {
             continue;
         }
 
-        auto neighbors = field.get_neighbors(cell);
+        std::vector<Cell*> neighbors = field.get_neighbors(cell);
 
         for (Cell* neighbor_ptr : neighbors) {
             if (neighbor_ptr->get_type() != CellType::BLACK) {
@@ -309,27 +401,26 @@ void Rules::apply_adjacent_black_rule(Field& field, Graph& graph) {
             int nx = neighbor_cell.get_x();
             int ny = neighbor_cell.get_y();
 
-            int dx = nx - x;
-            int dy = ny - y;
-
-            Direction dir = DirectionHelper::get_dir_delta(dx, dy);
-
-            if (dir == Direction::LEFT) {
-                force_straight_path(field, graph, cell, Direction::RIGHT);
-                force_straight_path(field, graph, neighbor_cell, Direction::LEFT);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::RIGHT) {
-                force_straight_path(field, graph, cell, Direction::LEFT);
-                force_straight_path(field, graph, neighbor_cell, Direction::RIGHT);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::UP) {
-                force_straight_path(field, graph, cell, Direction::UP);
-                force_straight_path(field, graph, neighbor_cell, Direction::DOWN);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::DOWN) {
-                force_straight_path(field, graph, cell, Direction::DOWN);
-                force_straight_path(field, graph, neighbor_cell, Direction::UP);
-                graph.remove_edge(cell, neighbor_cell);
+            if (x > nx) {
+                force_straight(field, graph, cell, Direction::RIGHT);
+                force_straight(field, graph, neighbor_cell, Direction::LEFT);
+                ban(field, graph, cell, Direction::LEFT);
+                ban(field, graph, neighbor_cell, Direction::RIGHT);
+            } else if (x < nx) {
+                force_straight(field, graph, cell, Direction::LEFT);
+                force_straight(field, graph, neighbor_cell, Direction::RIGHT);
+                ban(field, graph, cell, Direction::RIGHT);
+                ban(field, graph, neighbor_cell, Direction::LEFT);
+            } else if (y > ny) {
+                force_straight(field, graph, cell, Direction::UP);
+                force_straight(field, graph, neighbor_cell, Direction::DOWN);
+                ban(field, graph, cell, Direction::DOWN);
+                ban(field, graph, neighbor_cell, Direction::UP);
+            } else if (y < ny) {
+                force_straight(field, graph, cell, Direction::DOWN);
+                force_straight(field, graph, neighbor_cell, Direction::UP);
+                ban(field, graph, cell, Direction::UP);
+                ban(field, graph, neighbor_cell, Direction::DOWN);
             }
         }
     }
@@ -362,7 +453,7 @@ void Rules::apply_adjacent_black_near_edge_rule(Field& field, Graph& graph) {
             continue;
         }
 
-        auto neighbors = field.get_neighbors(cell);
+        std::vector<Cell*> neighbors = field.get_neighbors(cell);
 
         for (Cell* neighbor_ptr : neighbors) {
             if (neighbor_ptr->get_type() != CellType::BLACK) {
@@ -373,41 +464,52 @@ void Rules::apply_adjacent_black_near_edge_rule(Field& field, Graph& graph) {
             int nx = neighbor_cell.get_x();
             int ny = neighbor_cell.get_y();
 
-            int dx = nx - x;
-            int dy = ny - y;
-
-            Direction dir = DirectionHelper::get_dir_delta(dx, dy);
-
-            if (dir == Direction::LEFT) {
-                force_straight_path(field, graph, cell, Direction::DOWN);
-                force_straight_path(field, graph, cell, Direction::UP);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::RIGHT) {
-                force_straight_path(field, graph, cell, Direction::LEFT);
-                force_straight_path(field, graph, neighbor_cell, Direction::RIGHT);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::UP) {
-                force_straight_path(field, graph, cell, Direction::UP);
-                force_straight_path(field, graph, neighbor_cell, Direction::DOWN);
-                graph.remove_edge(cell, neighbor_cell);
-            } else if (dir == Direction::DOWN) {
-                force_straight_path(field, graph, cell, Direction::DOWN);
-                force_straight_path(field, graph, neighbor_cell, Direction::UP);
-                graph.remove_edge(cell, neighbor_cell);
+            if (y == top && ny == top) {
+                force_straight(field, graph, cell, Direction::DOWN);
+                force_straight(field, graph, neighbor_cell, Direction::DOWN);
+                ban(field, graph, cell, Direction::UP);
+                ban(field, graph, neighbor_cell, Direction::UP);
+            } else if (y == down && ny == down) {
+                force_straight(field, graph, cell, Direction::UP);
+                force_straight(field, graph, neighbor_cell, Direction::UP);
+                ban(field, graph, cell, Direction::DOWN);
+                ban(field, graph, neighbor_cell, Direction::DOWN);
+            } else if (x == left && nx == left) {
+                force_straight(field, graph, cell, Direction::RIGHT);
+                force_straight(field, graph, neighbor_cell, Direction::RIGHT);
+                ban(field, graph, cell, Direction::LEFT);
+                ban(field, graph, neighbor_cell, Direction::LEFT);
+            } else if (x == right && nx == right) {
+                force_straight(field, graph, cell, Direction::LEFT);
+                force_straight(field, graph, neighbor_cell, Direction::LEFT);
+                ban(field, graph, cell, Direction::RIGHT);
+                ban(field, graph, neighbor_cell, Direction::RIGHT);
+            } else {
+                continue;
             }
 
-            if (y == top && ny == top) {
-                force_straight_path(field, graph, cell, Direction::DOWN);
-                force_straight_path(field, graph, neighbor_cell, Direction::DOWN);
-            } else if (y == down && ny == down) {
-                force_straight_path(field, graph, cell, Direction::UP);
-                force_straight_path(field, graph, neighbor_cell, Direction::UP);
-            } else if (x == left && nx == left) {
-                force_straight_path(field, graph, cell, Direction::RIGHT);
-                force_straight_path(field, graph, neighbor_cell, Direction::RIGHT);
-            } else if (x == right && nx == right) {
-                force_straight_path(field, graph, cell, Direction::LEFT);
-                force_straight_path(field, graph, neighbor_cell, Direction::LEFT);
+            if (x > nx) {
+                force_straight(field, graph, cell, Direction::RIGHT);
+                force_straight(field, graph, neighbor_cell, Direction::LEFT);
+                ban(field, graph, cell, Direction::LEFT);
+                ban(field, graph, neighbor_cell, Direction::RIGHT);
+            } else if (x < nx) {
+                force_straight(field, graph, cell, Direction::LEFT);
+                force_straight(field, graph, neighbor_cell, Direction::RIGHT);
+                ban(field, graph, cell, Direction::RIGHT);
+                ban(field, graph, neighbor_cell, Direction::LEFT);
+            } else if (y < ny) {
+                force_straight(field, graph, cell, Direction::UP);
+                force_straight(field, graph, neighbor_cell, Direction::DOWN);
+                ban(field, graph, cell, Direction::DOWN);
+                ban(field, graph, neighbor_cell, Direction::UP);
+            } else if (y > ny) {
+                force_straight(field, graph, cell, Direction::DOWN);
+                force_straight(field, graph, neighbor_cell, Direction::UP);
+                ban(field, graph, cell, Direction::UP);
+                ban(field, graph, neighbor_cell, Direction::DOWN);
+            } else {
+                continue;
             }
         }
     }
@@ -465,47 +567,17 @@ void Rules::apply_white_border_pair_rule(Field& field, Graph& graph) {
 }
 
 /* ---------------------------------------------------------------------[<]-
- Function: Rules::apply_turn_for_left_border
- Synopsis: Applies a turn rule for the left border, ensuring the path 
-           bends properly between two white pearls on the left edge of the grid.
- ---------------------------------------------------------------------[>]*/
-void Rules::apply_turn_for_left_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
-    if (cell.get_y() < neighbor.get_y()) {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::DOWN);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::RIGHT, Direction::DOWN);
-    } else {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::UP);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::RIGHT, Direction::UP);
-    }    
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: Rules::apply_turn_for_right_border
- Synopsis: Applies a turn rule for the right border, ensuring the path 
-           bends properly between two white pearls on the right edge of the grid.
- ---------------------------------------------------------------------[>]*/
-void Rules::apply_turn_for_right_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
-    if (cell.get_y() < neighbor.get_y()) {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::DOWN);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::LEFT, Direction::DOWN);
-    } else {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::UP);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::LEFT, Direction::UP);
-    }    
-}
-
-/* ---------------------------------------------------------------------[<]-
  Function: Rules::apply_turn_for_top_border
  Synopsis: Applies a turn rule for the top border, ensuring the path 
            bends properly between two white pearls on the top edge of the grid.
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_turn_for_top_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
     if (cell.get_x() < neighbor.get_x()) {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::UP, Direction::RIGHT);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::DOWN, Direction::RIGHT);
+        Rules::turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::DOWN);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::RIGHT, Direction::DOWN);
     } else {
-        Rules::turn_in_next_cell(field, graph, cell, Direction::UP, Direction::LEFT);
-        Rules::turn_in_next_cell(field, graph, neighbor, Direction::DOWN, Direction::LEFT);
+        Rules::turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::DOWN);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::LEFT, Direction::DOWN);
     }
 }
 
@@ -516,12 +588,42 @@ void Rules::apply_turn_for_top_border(Field& field, Graph& graph, Cell& cell, Ce
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_turn_for_bottom_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
     if (cell.get_x() < neighbor.get_x()) {
+        Rules::turn_in_next_cell(field, graph, cell, Direction::LEFT, Direction::UP);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::RIGHT, Direction::UP);
+    } else {
+        Rules::turn_in_next_cell(field, graph, cell, Direction::RIGHT, Direction::UP);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::LEFT, Direction::UP);
+    }
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: Rules::apply_turn_for_left_border
+ Synopsis: Applies a turn rule for the left border, ensuring the path 
+           bends properly between two white pearls on the left edge of the grid.
+ ---------------------------------------------------------------------[>]*/
+void Rules::apply_turn_for_left_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
+    if (cell.get_y() < neighbor.get_y()) {
+        Rules::turn_in_next_cell(field, graph, cell, Direction::UP, Direction::RIGHT);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::DOWN, Direction::RIGHT);
+    } else {
         Rules::turn_in_next_cell(field, graph, cell, Direction::DOWN, Direction::RIGHT);
         Rules::turn_in_next_cell(field, graph, neighbor, Direction::UP, Direction::RIGHT);
+    }    
+}
+
+/* ---------------------------------------------------------------------[<]-
+ Function: Rules::apply_turn_for_right_border
+ Synopsis: Applies a turn rule for the right border, ensuring the path 
+           bends properly between two white pearls on the right edge of the grid.
+ ---------------------------------------------------------------------[>]*/
+void Rules::apply_turn_for_right_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor) {
+    if (cell.get_y() < neighbor.get_y()) {
+        Rules::turn_in_next_cell(field, graph, cell, Direction::UP, Direction::LEFT);
+        Rules::turn_in_next_cell(field, graph, neighbor, Direction::DOWN, Direction::LEFT);
     } else {
         Rules::turn_in_next_cell(field, graph, cell, Direction::DOWN, Direction::LEFT);
         Rules::turn_in_next_cell(field, graph, neighbor, Direction::UP, Direction::LEFT);
-    }
+    }    
 }
 
 /* ---------------------------------------------------------------------[<]-
@@ -543,12 +645,17 @@ void Rules::enforce_white_triplets(Field& field, Graph& graph) {
 
             if (neighbor_1.get_type() == CellType::WHITE && neighbor_2.get_type() == CellType::WHITE) {
 
-                std::vector<Direction> perp_dirs = DirectionHelper::get_perpendicular(dir);
-                Direction perp_dir = perp_dirs.front();
+                std::pair<Direction, Direction> perp_dirs = DirectionHelper::get_perpendicular(dir);
+                Direction perp_dir_1 = perp_dirs.first;
+                Direction perp_dir_2 = perp_dirs.second;
 
-                force_through_path(field, graph, cell, perp_dir);
-                force_through_path(field, graph, neighbor_1, perp_dir);
-                force_through_path(field, graph, neighbor_2, perp_dir);
+                connect_with_next(field, graph, cell, perp_dir_1);
+                connect_with_next(field, graph, neighbor_1, perp_dir_1);
+                connect_with_next(field, graph, neighbor_2, perp_dir_1);
+                
+                connect_with_next(field, graph, cell, perp_dir_2);
+                connect_with_next(field, graph, neighbor_1, perp_dir_2);
+                connect_with_next(field, graph, neighbor_2, perp_dir_2);
             }
         }
     }
@@ -568,7 +675,7 @@ void Rules::apply_combination_rule(Field& field, Graph& graph) {
             {-1, -1}, {1, 1}, {-1, 1}, {1, -1}
         };
         
-        for (auto offset : offsets) {
+        for (std::pair<int, int> offset : offsets) {
             int nx = x + offset.first;
             int ny = y + offset.second;
             
@@ -601,13 +708,13 @@ void Rules::apply_combination_rule(Field& field, Graph& graph) {
             
             if (dir1 != dir2) {
                 if (dir1 == Direction::RIGHT) {
-                    force_straight_path(field, graph, cell, Direction::LEFT);
+                    force_straight(field, graph, cell, Direction::LEFT);
                 } else if (dir1 == Direction::LEFT) {
-                    force_straight_path(field, graph, cell, Direction::RIGHT);
+                    force_straight(field, graph, cell, Direction::RIGHT);
                 } else if (dir2 == Direction::UP) {
-                    force_straight_path(field, graph, cell, Direction::DOWN);
+                    force_straight(field, graph, cell, Direction::DOWN);
                 } else if (dir2 == Direction::DOWN) {
-                    force_straight_path(field, graph, cell, Direction::UP);
+                    force_straight(field, graph, cell, Direction::UP);
                 }
             }
         }

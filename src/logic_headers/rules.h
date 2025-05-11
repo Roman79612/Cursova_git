@@ -23,9 +23,9 @@ namespace Rules {
     // Helper function to pattern rules
     bool is_on_border(int x, int y, int width, int height);
     bool is_near_border(int x, int y, int width, int height);
-    void force_straight_path(Field& field, Graph& graph, Cell& cell, Direction dir);
-    void force_through_path(Field& field, Graph& graph, Cell& cell, Direction dir);
-    void force_ban_perpendicular(Field& field, Graph& graph, Cell& cell, Direction dir);
+    void force_straight(Field& field, Graph& graph, Cell& cell, Direction dir);
+    void connect_with_next(Field& field, Graph& graph, Cell& cell, Direction dir);
+    void ban(Field& field, Graph& graph, Cell& cell, Direction dir);
     void turn_in_next_cell(Field& field, Graph& graph, Cell& from_cell, Direction move_dir, Direction turn_dir);
     void apply_turn_for_left_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);
     void apply_turn_for_right_border(Field& field, Graph& graph, Cell& cell, Cell& neighbor);

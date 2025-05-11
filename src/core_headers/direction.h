@@ -34,7 +34,7 @@ public:
     static Direction rotate_left(Direction dir);
     static Direction rotate_right(Direction dir);
     static bool is_valid_direction(Direction dir);
-    static std::vector<Direction> get_perpendicular(Direction dir);
+    static std::pair<Direction, Direction> get_perpendicular(Direction dir);
     static std::vector<Direction> get_all_dirs();
     static const char *to_string(Direction dir);
 };
