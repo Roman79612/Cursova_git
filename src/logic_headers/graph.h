@@ -22,7 +22,8 @@ enum class EdgeState { UNKNOWN, YES, NO };
 
 class Graph {
 public:
-    Graph(Field& field);
+    Graph(const Field& field);
+    Graph(const Graph& other);
 
     void add_edge(Cell& a, Cell& b);
     void remove_edge(Cell& a, Cell& b);
@@ -30,9 +31,16 @@ public:
     Cell& get_neighbor(Cell& cell, Direction dir);
     void set_edge(Cell& a, Cell& b, EdgeState state);
     EdgeState get_state(Cell& a, Cell& b) const;
-
+    void dfs_collect(Cell& cell, std::set<Cell*>& visited, std::vector<Cell*>& comp);
+    std::vector<std::vector<Cell*>> get_connected_components();
+    void dfs_visit(Cell& cell, std::set<Cell*>& visited);
+    bool is_valid_path();
+    std::vector<std::pair<Cell&, Cell&>> get_all_possible_edges();
+    bool can_connect(Cell& a, Cell& b);
+    void force_edge(Cell& a, Cell& b);
+    void ban_edge(Cell& a, Cell& b);
 private:
-    Field& field;
+    Field field;
     std::map<std::pair<Cell*, Cell*>, EdgeState> edge_matrix;
 };
 

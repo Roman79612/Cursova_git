@@ -16,6 +16,7 @@
 #include "../core_headers/direction.h"
 #include "../logic_headers/rules.h"
 #include "../logic_headers/graph.h"
+#include <unordered_set>
 
 class Solver {
 public:
@@ -31,6 +32,7 @@ private:
     void apply_deduction_rules();
     bool backtrack();
     void solve_empty_field();
+    bool is_solved();
 };
 
 #endif // SOLVER_H

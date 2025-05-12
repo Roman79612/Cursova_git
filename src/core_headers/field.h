@@ -32,7 +32,7 @@ public:
 
     // Accessors
     Cell& get_cell(int x, int y);
-    Cell* get_cell_ptr(int x, int y);
+    const Cell* get_cell_ptr(int x, int y) const;
     int get_width() const;
     int get_height() const;
     int get_white_count() const;
@@ -41,6 +41,7 @@ public:
     std::vector<Cell*> get_neighbors(Cell &cell);
     std::vector<Cell*> get_white_cells();
     std::vector<Cell*> get_black_cells();
+    std::vector<Cell*> get_all_cells();    
 
     // Resetting
     void reset_all_dirs();

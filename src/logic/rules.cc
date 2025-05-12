@@ -60,18 +60,11 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
  Synopsis: Forces a straight path in the specified direction using Graph.
  ---------------------------------------------------------------------[>]*/
  void Rules::force_straight(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    int x = cell.get_x();
-    int y = cell.get_y();
-
     try {
         Cell& next = graph.get_neighbor(cell, dir);
-        int nx = next.get_x();
-        int ny = next.get_y();
         graph.add_edge(cell, next);
 
         Cell& after_next = graph.get_neighbor(next, dir);
-        int ax = after_next.get_x();
-        int ay = after_next.get_y();
         graph.add_edge(next, after_next);
 
         if (next.get_type() == CellType::EMPTY) {
@@ -89,7 +82,6 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
  Synopsis: Forces a path through the specified cell in the given direction, using the graph.
  ---------------------------------------------------------------------[>]*/
  void Rules::connect_with_next(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    std::wcerr << L"[connect_with_next] Cell: (" << cell.get_x() << L"," << cell.get_y() << L"), Dir: " << DirectionHelper::to_string(dir) << L"\n";
     try {
         Cell& next = graph.get_neighbor(cell, dir);
         graph.add_edge(cell, next);
@@ -110,22 +102,21 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
  Synopsis: Ban a path through the specified cell in the given perpendicular direction, using the graph.
  ---------------------------------------------------------------------[>]*/
  void Rules::ban(Field& field, Graph& graph, Cell& cell, Direction dir) {
-    std::wcerr << L"[ban] Cell: (" << cell.get_x() << L"," << cell.get_y() << L"), Dir: " << DirectionHelper::to_string(dir) << L"\n";
     std::pair<int, int> delta = DirectionHelper::get_delta(dir);
     int nx = cell.get_x() + delta.first;
     int ny = cell.get_y() + delta.second;
 
+    if (!field.in_bounds(nx, ny)) {
+        return;
+    }
+
     cell.set_forbidden_dir(dir);
 
-    if (field.in_bounds(nx, ny)) {
-        try {
-            Cell& next = graph.get_neighbor(cell, dir);
-            graph.remove_edge(cell, next);
-        } catch (const std::exception& e) {
-            std::wcerr << L"[ban] Error: " << e.what() << L"\n";
-        }
-    } else {
-        std::wcerr << L"[ban] Out of bounds: (" << nx << L"," << ny << L")\n";
+    try {
+        Cell& next = graph.get_neighbor(cell, dir);
+        graph.remove_edge(cell, next);
+    } catch (const std::exception& e) {
+        std::wcerr << L"[ban] Error: " << e.what() << L"\n";
     }
 }
 
@@ -141,8 +132,6 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
     int x = from_cell.get_x();
     int y = from_cell.get_y();
 
-    std::wcerr << L"[turn_in_next_cell] From: (" << x << L"," << y << L") MoveDir: " << DirectionHelper::to_string(move_dir) << L", TurnDir: " << DirectionHelper::to_string(turn_dir) << L"\n";
-
     std::pair<int, int> delta = DirectionHelper::get_delta(move_dir);
     int nx = x + delta.first;
     int ny = y + delta.second;
@@ -156,21 +145,16 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
         Cell& next = graph.get_neighbor(from_cell, move_dir);
         graph.add_edge(from_cell, next);
 
-        std::wcerr << L"[turn_in_next_cell] Connected: (" << x << L"," << y << L") -> (" << next.get_x() << L"," << next.get_y() << L")\n";
-
         std::pair<int, int> delta_turn = DirectionHelper::get_delta(turn_dir);
         int tx = nx + delta_turn.first;
         int ty = ny + delta_turn.second;
 
         if (!field.in_bounds(tx, ty)) {
-            std::wcerr << L"[turn_in_next_cell] Turn target out of bounds: (" << tx << L"," << ty << L")\n";
             return;
         }
 
         Cell& turn = graph.get_neighbor(next, turn_dir);
         graph.add_edge(next, turn);
-
-        std::wcerr << L"[turn_in_next_cell] Bend: (" << next.get_x() << L"," << next.get_y() << L") -> (" << turn.get_x() << L"," << turn.get_y() << L")\n";
 
         Direction opp_turn = DirectionHelper::opposite(turn_dir);
         next.set_forbidden_dir(move_dir);
@@ -181,6 +165,62 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
     }
 }
 
+void Rules::apply_black_rule(Field& field, Graph& graph) {
+    for (Cell* pearl : field.get_black_cells()) {
+        int x = pearl->get_x();
+        int y = pearl->get_y();
+
+        for (Direction dir1 : DirectionHelper::get_all_dirs()) {
+            Direction dir2 = DirectionHelper::rotate_right(dir1);
+            int x1 = x + DirectionHelper::get_dx(dir1);
+            int y1 = y + DirectionHelper::get_dy(dir1);
+            int x2 = x + DirectionHelper::get_dx(dir2);
+            int y2 = y + DirectionHelper::get_dy(dir2);
+
+            int x3 = x1 + DirectionHelper::get_dx(dir1);
+            int y3 = y1 + DirectionHelper::get_dy(dir1);
+            int x4 = x2 + DirectionHelper::get_dx(dir2);
+            int y4 = y2 + DirectionHelper::get_dy(dir2);
+
+            if (!field.in_bounds(x1, y1) || !field.in_bounds(x2, y2)) continue;
+            if (!field.in_bounds(x3, y3) || !field.in_bounds(x4, y4)) continue;
+
+            Cell& c1 = field.get_cell(x1, y1);
+            Cell& c2 = field.get_cell(x2, y2);
+            Cell& c3 = field.get_cell(x3, y3);
+            Cell& c4 = field.get_cell(x4, y4);
+
+            graph.force_edge(*pearl, c1);
+            graph.force_edge(*pearl, c2);
+
+            graph.force_edge(c1, c3);
+            graph.force_edge(c2, c4);
+        }
+    }
+}
+
+void Rules::apply_white_rule(Field& field, Graph& graph) {
+    for (Cell* pearl : field.get_white_cells()) {
+        int x = pearl->get_x();
+        int y = pearl->get_y();
+
+        for (Direction dir : {Direction::UP, Direction::RIGHT}) {
+            Direction opp = DirectionHelper::opposite(dir);
+            int x1 = x + DirectionHelper::get_dx(dir);
+            int y1 = y + DirectionHelper::get_dy(dir);
+            int x2 = x + DirectionHelper::get_dx(opp);
+            int y2 = y + DirectionHelper::get_dy(opp);
+
+            if (!field.in_bounds(x1, y1) || !field.in_bounds(x2, y2)) continue;
+
+            Cell& neighbor1 = field.get_cell(x1, y1);
+            Cell& neighbor2 = field.get_cell(x2, y2);
+
+            graph.force_edge(*pearl, neighbor1);
+            graph.force_edge(*pearl, neighbor2);
+        }
+    }
+}
 
 /* ---------------------------------------------------------------------[<]-
  Function: Rules::apply_black_corner_rule
@@ -188,7 +228,9 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_black_corner_rule(Field& field, Graph& graph) {
     std::vector<Cell*> black_cells = field.get_black_cells();
-    if (black_cells.empty()) return;
+    if (black_cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -228,7 +270,9 @@ void Rules::apply_black_corner_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]-*/
 void Rules::apply_white_edge_rule(Field& field, Graph& graph) {
     std::vector<Cell*> white_cells = field.get_white_cells();
-    if (white_cells.empty()) return;
+    if (white_cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -300,7 +344,9 @@ void Rules::apply_white_edge_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]-*/
 void Rules::apply_black_edge_rule(Field& field, Graph& graph) {
     std::vector<Cell*> cells = field.get_black_cells();
-    if (cells.empty()) return;
+    if (cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -338,7 +384,9 @@ void Rules::apply_black_edge_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_black_near_border_rule(Field& field, Graph& graph) {
     std::vector<Cell*> cells = field.get_black_cells();
-    if (cells.empty()) return;
+    if (cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -376,7 +424,9 @@ void Rules::apply_black_near_border_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_adjacent_black_rule(Field& field, Graph& graph) {
     std::vector<Cell*> black_cells = field.get_black_cells();
-    if (black_cells.empty()) return;
+    if (black_cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -434,7 +484,9 @@ void Rules::apply_adjacent_black_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]-*/
 void Rules::apply_adjacent_black_near_edge_rule(Field& field, Graph& graph) {
     std::vector<Cell*> black_cells = field.get_black_cells();
-    if (black_cells.empty()) return;
+    if (black_cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();
@@ -524,7 +576,9 @@ void Rules::apply_adjacent_black_near_edge_rule(Field& field, Graph& graph) {
  ---------------------------------------------------------------------[>]*/
 void Rules::apply_white_border_pair_rule(Field& field, Graph& graph) {
     std::vector<Cell*> white_cells = field.get_white_cells();
-    if (white_cells.empty()) return;
+    if (white_cells.empty()) {
+        return;
+    } 
 
     int width = field.get_width();
     int height = field.get_height();

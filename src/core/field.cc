@@ -95,7 +95,7 @@ Cell& Field::get_cell(int x, int y) {
  Function: get_cell
  Synopsis: Safety returns the cell at (x, y).
  ---------------------------------------------------------------------[>]-*/
-Cell* Field::get_cell_ptr(int x, int y) {
+const Cell* Field::get_cell_ptr(int x, int y) const {
     if (!in_bounds(x, y)) {
         return nullptr;
     }
@@ -200,6 +200,14 @@ std::vector<Cell*> Field::get_black_cells() {
         }
     }
     return black_cells;
+}
+
+std::vector<Cell*> Field::get_all_cells() {
+    std::vector<Cell*> result;
+    for (auto &row : cells)
+        for (auto &cell : row)
+            result.push_back(&cell);
+    return result;
 }
 
 /* ---------------------------------------------------------------------[<]- 
