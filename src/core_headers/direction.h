@@ -3,8 +3,8 @@
  Title: Direction class definition
  Group: TV-42
  Student: Kriuchkov R. Y.
- Written: 2025-04-30
- Revised: 2025-05-07
+ Written: 2025-04-29
+ Revised: 2025-05-14
  Description: Header file for handling movement directions in the puzzle grid.
  ------------------------------------------------------------------</Header>-*/
 
@@ -26,6 +26,7 @@ enum class Direction {
 // Class for handling direction logic
 class DirectionHelper {
 public:
+    //static methods
     static int get_dx(Direction dir);
     static int get_dy(Direction dir);
     static Direction get_dir_delta(int dx, int dy);

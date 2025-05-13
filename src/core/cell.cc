@@ -3,10 +3,9 @@
  Title: Cell class implementation
  Group: TV-42
  Student: Kriuchkov R. Y.
- Written: 2025-04-30
- Revised: 2025-05-07
- Description: Implementation of the Cell class for handling puzzle grid cells,
-              including handling directions and cell states.
+ Written: 2025-04-29
+ Revised: 2025-05-14
+ Description: Implementation of the Cell class for handling puzzle grid cells, handling directions.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/cell.h"
@@ -19,7 +18,6 @@ Cell::Cell() {
     x = 0;
     y = 0;
     type = CellType::EMPTY;
-    visited = false;
     dir_from = Direction::NONE;
     dir_to = Direction::NONE;
     forb_dir1 = Direction::NONE;
@@ -38,7 +36,6 @@ Cell::Cell(int x, int y) {
     this->x = x;
     this->y = y;
     type = CellType::EMPTY;
-    visited = false;
     dir_from = Direction::NONE;
     dir_to = Direction::NONE;
     forb_dir1 = Direction::NONE;
@@ -60,7 +57,6 @@ Cell::Cell(int x, int y, CellType type) {
     this->x = x;
     this->y = y;
     this->type = type;
-    visited = false;
     dir_from = Direction::NONE;
     dir_to = Direction::NONE;
     forb_dir1 = Direction::NONE;
@@ -80,14 +76,6 @@ void Cell::set_type(CellType new_type) {
         type = new_type;
         symbol = get_symbol();
     } 
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: set_visited
- Synopsis: Set the visited status of the cell.
- ---------------------------------------------------------------------[>]-*/
-void Cell::set_visited(bool state) {
-    visited = state;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -313,14 +301,6 @@ bool Cell::is_white() const {
  ---------------------------------------------------------------------[>]-*/
 bool Cell::is_empty() const {
     return type == CellType::EMPTY;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: is_visited
- Synopsis: Check if the cell has been visited.
- ---------------------------------------------------------------------[>]-*/
-bool Cell::is_visited() const {
-    return visited;
 }
 
 /* ---------------------------------------------------------------------[<]- 

@@ -3,10 +3,9 @@
  Title: Field class implementation
  Group: TV-42
  Student: Kriuchkov R. Y.
- Written: 2025-04-30
- Revised: 2025-05-07
- Description: Implementation of the Field class for managing puzzle grid,
-          including access, validation, and utility methods.
+ Written: 2025-04-29
+ Revised: 2025-05-14
+ Description: Implementation of the Field class for managing grid, access, validation.
  ------------------------------------------------------------------</Header>-*/
 
 #include "../core_headers/field.h"
@@ -15,10 +14,7 @@
  Function: Field
  Synopsis: Default constructor initializes a field with no cells.
  ---------------------------------------------------------------------[>]-*/
-Field::Field() {
-    width = 0;
-    height = 0;
-}
+Field::Field() {}
 
 /* ---------------------------------------------------------------------[<]- 
     Function: init
@@ -30,8 +26,6 @@ void Field::init(int w, int h) {
     }
     width = w;
     height = h;
-    white_count = 0;
-    black_count = 0;
     cells.resize(height, std::vector<Cell>(width));
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x){
@@ -59,8 +53,6 @@ void Field::set_cell(const Cell& cell) {
         throw std::out_of_range("Coordinates out of bounds" + std::to_string(x) + ", " + std::to_string(y));
     }
     cells[y][x] = cell;
-    white_count = has_white_cell();
-    black_count = has_black_cell();
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -92,17 +84,6 @@ Cell& Field::get_cell(int x, int y) {
 }
 
 /* ---------------------------------------------------------------------[<]- 
- Function: get_cell
- Synopsis: Safety returns the cell at (x, y).
- ---------------------------------------------------------------------[>]-*/
-const Cell* Field::get_cell_ptr(int x, int y) const {
-    if (!in_bounds(x, y)) {
-        return nullptr;
-    }
-    return &cells[y][x];
-}
-
-/* ---------------------------------------------------------------------[<]- 
  Function: get_width
  Synopsis: Returns width of the field.
  ---------------------------------------------------------------------[>]-*/
@@ -116,22 +97,6 @@ int Field::get_width() const {
  ---------------------------------------------------------------------[>]-*/
 int Field::get_height() const {
     return height;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_white_count
- Synopsis: Returns the number of white cells in the field.
- ---------------------------------------------------------------------[>]-*/
-int Field::get_white_count() const {
-    return white_count;
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: get_black_count
- Synopsis: Returns the number of black cells in the field.
- ---------------------------------------------------------------------[>]-*/
-int Field::get_black_count() const {
-    return black_count;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -176,8 +141,8 @@ std::vector<Direction> Field::get_available_directions(Cell &cell) {
  ---------------------------------------------------------------------[>]-*/
 std::vector<Cell*> Field::get_white_cells() {
     std::vector<Cell*> white_cells;
-    for (auto& row : cells) {
-        for (auto& cell : row) {
+    for (std::vector<Cell>& row : cells) {
+        for (Cell& cell : row) {
             if (cell.get_type() == CellType::WHITE) {
                 white_cells.push_back(&cell);
             }
@@ -192,8 +157,8 @@ std::vector<Cell*> Field::get_white_cells() {
  ---------------------------------------------------------------------[>]-*/
 std::vector<Cell*> Field::get_black_cells() {
     std::vector<Cell*> black_cells;
-    for (auto& row : cells) {
-        for (auto& cell : row) {
+    for (std::vector<Cell>& row : cells) {
+        for (Cell& cell : row) {
             if (cell.get_type() == CellType::BLACK) {
                 black_cells.push_back(&cell);
             }
@@ -202,56 +167,16 @@ std::vector<Cell*> Field::get_black_cells() {
     return black_cells;
 }
 
-std::vector<Cell*> Field::get_all_cells() {
-    std::vector<Cell*> result;
-    for (auto &row : cells)
-        for (auto &cell : row)
-            result.push_back(&cell);
-    return result;
-}
-
 /* ---------------------------------------------------------------------[<]- 
  Function: reset_all_dirs
  Synopsis: Resets directions of all cells in the field.
  ---------------------------------------------------------------------[>]-*/
 void Field::reset_all_dirs() {
-    for (auto& row : cells) {
-        for (auto& cell : row) {
+    for (std::vector<Cell>& row : cells) {
+        for (Cell& cell : row) {
             cell.reset_dirs();
         }
     }
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: reset_all_visited
- Synopsis: Resets visited status of all cells.
- ---------------------------------------------------------------------[>]-*/
-void Field::reset_all_visited() {
-    for (auto& row : cells) {
-        for (auto& cell : row) {
-            cell.set_visited(false);
-        }
-    }
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: reset
- Synopsis: Resets all visited flags and directions in the field.
- ---------------------------------------------------------------------[>]-*/
-void Field::reset() {
-    reset_all_dirs();
-    reset_all_visited();
-}
-
-/* ---------------------------------------------------------------------[<]- 
- Function: clone
- Synopsis: Returns a deep copy of the field.
- ---------------------------------------------------------------------[>]-*/
-Field Field::clone() const {
-    Field copy;
-    copy.init(width, height);
-    copy.cells = cells;
-    return copy;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -297,15 +222,14 @@ bool Field::can_go_in_steps(int x, int y, Direction dir, int steps) const {
  Synopsis: Checks if there are any white cells in the field.
  ---------------------------------------------------------------------[>]-*/
 bool Field::has_white_cell() {
-    white_count = 0;
-    for (const auto& row : cells) {
-        for (const auto& cell : row) {
+    for (const std::vector<Cell>& row : cells) {
+        for (const Cell& cell : row) {
             if (cell.get_type() == CellType::WHITE) {
-                ++white_count;
+                return true;
             }
         }
     }
-    return white_count > 0;
+    return false;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -313,15 +237,14 @@ bool Field::has_white_cell() {
  Synopsis: Checks if there are any black cells in the field.
  ---------------------------------------------------------------------[>]-*/
 bool Field::has_black_cell() {
-    black_count = 0;
-    for (const auto& row : cells) {
-        for (const auto& cell : row) {
+    for (const std::vector<Cell>& row : cells) {
+        for (const Cell& cell : row) {
             if (cell.get_type() == CellType::BLACK) {
-                ++black_count;
+                return true;
             }
         }
     }
-    return black_count > 0; 
+    return false; 
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -333,16 +256,13 @@ void Field::print_field() const {
         std::wcerr << L"Field is not initialized." << std::endl;
         return;
     }
-
     print_top_border();
-
     for (int y = 0; y < get_height(); ++y) {
         print_row_cells(y);
         if (y != get_height() - 1) {
             print_row_separator(y);
         }
     }
-
     print_bottom_border();
 }
 
@@ -351,10 +271,10 @@ void Field::print_field() const {
  Synopsis: Prints the top border of the field.
  ---------------------------------------------------------------------[>]-*/
 void Field::print_top_border() const {
-    std::wcout << L'┌';
+    std::wcout << BOLD << L'┌';
     for (int x = 0; x < get_width() - 1; ++x)
         std::wcout << L"───┬";
-    std::wcout << L"───┐\n";
+    std::wcout << L"───┐" << RESET_COLOUR << std::endl;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -362,7 +282,7 @@ void Field::print_top_border() const {
  Synopsis: Prints the cells in a row with their symbols and borders.
  ---------------------------------------------------------------------[>]-*/
 void Field::print_row_cells(int y) const {
-    std::wcout << L'│';
+    std::wcout << BOLD << L'│';
     int max_x = get_width();
     for (int x = 0; x < max_x; ++x) {
         const Cell& cell = cells[y][x];
@@ -383,33 +303,33 @@ void Field::print_row_cells(int y) const {
         if (cell.is_line()) {
             if (dir_left) {
                 ui::backspace(1);
-                std::wcout << GREEN << L'┼' << L" " << symbol << L" " << RESET_COLOUR << L"│";
+                std::wcout << BOLD << GREEN << L'┼' << L" " << symbol << L" " << RESET_COLOUR << BOLD << L"│" << RESET_COLOUR;
             } else if (dir_right) {
-                std::wcout << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
+                std::wcout << BOLD << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
             } else {
-                std::wcout << GREEN << L" " << symbol << L" " << RESET_COLOUR << L"│";
+                std::wcout << BOLD << GREEN << L" " << symbol << L" " << RESET_COLOUR << BOLD << L"│" << RESET_COLOUR;
             }
         } else if (is_dot) {
             if (dir_left) {
                 ui::backspace(1);
-                std::wcout << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│";
+                std::wcout << BOLD << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│" << RESET_COLOUR;
             } else if (dir_right) {
-                std::wcout << RESET_COLOUR << L" " << symbol << L" " << GREEN << L"┼" << RESET_COLOUR;
+                std::wcout << BOLD << RESET_COLOUR << L" " << symbol << L" " << GREEN << L"┼" << RESET_COLOUR;
             } else {
-                std::wcout << L" " << symbol << L" " << L"│";
+                std::wcout << BOLD << L" " << symbol << L" " << L"│" << RESET_COLOUR;
             }
         } else {
             if (dir_left) {
                 ui::backspace(1);
-                std::wcout << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│";
+                std::wcout << BOLD << GREEN << L'┼' << L" " << RESET_COLOUR << symbol << L" " << L"│" << RESET_COLOUR;
             } else if (dir_right) {
-                std::wcout << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
+                std::wcout << BOLD << GREEN << L" " << symbol << L" " << L"┼" << RESET_COLOUR;
             } else {
-                std::wcout << GREEN << L" " << symbol << L" " << RESET_COLOUR<< L"│";
+                std::wcout << BOLD << GREEN << L" " << symbol << L" " << RESET_COLOUR << BOLD << L"│" << RESET_COLOUR;
             }
         }
     }
-    std::wcout << L'\n';
+    std::wcout << RESET_COLOUR << std::endl;
 }
 
 
@@ -418,7 +338,7 @@ void Field::print_row_cells(int y) const {
  Synopsis: Prints the separator between rows.
  ---------------------------------------------------------------------[>]-*/
 void Field::print_row_separator(int y) const {
-    std::wcout << L'├';
+    std::wcout << BOLD << L'├';
     for (int x = 0; x < get_width(); ++x) {
         const Cell& cell = cells[y][x];
         Direction in = cell.get_dir_from();
@@ -435,29 +355,29 @@ void Field::print_row_separator(int y) const {
             ui::move_cursor_up(2);
             ui::move_cursor_right(3);
             ui::move_cursor_left(3);
-            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            std::wcout << BOLD << L'─' << GREEN << L'┼' << RESET_COLOUR << BOLD << L'─' << RESET_COLOUR;
             ui::move_cursor_down(2);
             ui::move_cursor_left(3);
-            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            std::wcout << BOLD << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─' << RESET_COLOUR;
         } else if (dir_up && !forb_up) {
             ui::move_cursor_up(2);
             ui::move_cursor_right(3);
             ui::move_cursor_left(3);
-            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            std::wcout << BOLD << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─' << RESET_COLOUR;
             ui::move_cursor_down(2);
             ui::move_cursor_left(3);
-            std::wcout << L"───";
+            std::wcout << BOLD << L"───";
         } else if (dir_down && !forb_down) {
-            std::wcout << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─';
+            std::wcout << BOLD << L'─' << GREEN << L'┼' << RESET_COLOUR << L'─' << RESET_COLOUR;
         } else {
-            std::wcout << L"───";
+            std::wcout << BOLD << L"───" << RESET_COLOUR;
         }
 
         if (x != get_width() - 1) {
-            std::wcout << L'┼';
+            std::wcout << BOLD << L'┼' << RESET_COLOUR;
         }
     }
-    std::wcout << L'┤' << std::endl;
+    std::wcout << BOLD << L'┤' << RESET_COLOUR << std::endl;
 }
 
 /* ---------------------------------------------------------------------[<]- 
@@ -465,8 +385,8 @@ void Field::print_row_separator(int y) const {
  Synopsis: Prints the bottom border of the field.
  ---------------------------------------------------------------------[>]-*/
 void Field::print_bottom_border() const {
-    std::wcout << L'└';
+    std::wcout << BOLD << L'└';
     for (int x = 0; x < get_width() - 1; ++x)
         std::wcout << L"───┴";
-    std::wcout << L"───┘\n";
+    std::wcout << L"───┘" << RESET_COLOUR << std::endl;
 }

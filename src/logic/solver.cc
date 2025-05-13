@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-07
+ Revised: 2025-05-14
   Description: Implementation of the Solver class for solving Masyu puzzles.
  ------------------------------------------------------------------</Header>-*/
 
@@ -27,10 +27,7 @@ Solver::Solver(Field& field) : field(field), graph(field) {
  Synopsis: Main solving function.
  ---------------------------------------------------------------------[>]*/
 bool Solver::solve() {
-	int white_count = field.get_white_count();
-	int black_count = field.get_black_count();
-
-	if (white_count == 0 && black_count == 0) {
+	if (!field.has_black_cell() && !field.has_white_cell()) {
 		Rules::apply_corner_rule(field);
 		solve_empty_field();
 		return true;
@@ -38,11 +35,7 @@ bool Solver::solve() {
 
 	apply_deduction_rules();
 
-    if (is_solved()) {
-        return true;
-    }
-
-	return backtrack();
+	return true;
 }
 
 /* ---------------------------------------------------------------------[<]-
@@ -50,8 +43,6 @@ bool Solver::solve() {
  Synopsis: Applies deduction rules to the field.
  ---------------------------------------------------------------------[>]*/
 void Solver::apply_deduction_rules() {
-    Rules::apply_black_rule(field, graph);
-    Rules::apply_white_rule(field, graph);
     Rules::apply_black_corner_rule(field, graph);
     Rules::apply_white_border_pair_rule(field, graph);
 	Rules::apply_white_edge_rule(field, graph);
@@ -61,109 +52,6 @@ void Solver::apply_deduction_rules() {
     Rules::apply_adjacent_black_near_edge_rule(field, graph);
     Rules::enforce_white_triplets(field, graph);
     Rules::apply_combination_rule(field, graph);
-}
-
-/* ---------------------------------------------------------------------[<]-
- Function: Solver::backtrack
- Synopsis: Backtracking function to find a solution.
----------------------------------------------------------------------[>]*/
-bool Solver::backtrack() {
-    if (is_solved()) {
-        return true;
-    }
-
-    for (Cell* cell_ptr : field.get_all_cells()) {
-        for (Direction dir : DirectionHelper::get_all_dirs()) {
-            Cell& cell = *cell_ptr;
-            int nx = cell.get_x() + DirectionHelper::get_dx(dir);
-            int ny = cell.get_y() + DirectionHelper::get_dy(dir);
-
-            if (!field.in_bounds(nx, ny)) continue;
-
-            Cell& neighbor = field.get_cell(nx, ny);
-
-            if (graph.get_state(cell, neighbor) != EdgeState::UNKNOWN) continue;
-
-            Field field_snapshot = field;
-            Graph graph_snapshot = graph;
-
-            graph.add_edge(cell, neighbor);
-            apply_deduction_rules();
-
-            if (backtrack()) return true;
-
-            field = field_snapshot;
-            graph = graph_snapshot;
-
-            graph.remove_edge(cell, neighbor);
-            apply_deduction_rules();
-
-            if (backtrack()) return true;
-
-            field = field_snapshot;
-            graph = graph_snapshot;
-        }
-    }
-
-    return false;
-}
-
-bool Solver::is_solved() {
-    std::unordered_set<Cell*> visited;
-    std::vector<Cell*> loop_cells;
-
-    for (Cell* cell_ptr : field.get_all_cells()) {
-        Cell& cell = *cell_ptr;
-        int connected = 0;
-        for (Direction dir : DirectionHelper::get_all_dirs()) {
-            int nx = cell.get_x() + DirectionHelper::get_dx(dir);
-            int ny = cell.get_y() + DirectionHelper::get_dy(dir);
-            if (!field.in_bounds(nx, ny)) continue;
-
-            Cell& neighbor = field.get_cell(nx, ny);
-            if (graph.get_state(cell, neighbor) == EdgeState::YES) {
-                connected++;
-            }
-        }
-
-        if (connected == 2) {
-            loop_cells.push_back(&cell);
-        } else if (connected != 0 && connected != 2) {
-            return false;
-        }
-    }
-
-    if (loop_cells.empty()) return false;
-
-    Cell* start = loop_cells.front();
-    Cell* current = start;
-    Cell* prev = nullptr;
-
-    do {
-        visited.insert(current);
-        Cell* next = nullptr;
-
-        for (Direction dir : DirectionHelper::get_all_dirs()) {
-            int nx = current->get_x() + DirectionHelper::get_dx(dir);
-            int ny = current->get_y() + DirectionHelper::get_dy(dir);
-            if (!field.in_bounds(nx, ny)) continue;
-
-            Cell& neighbor = field.get_cell(nx, ny);
-
-            if (graph.get_state(*current, neighbor) == EdgeState::YES && &neighbor != prev) {
-                next = &neighbor;
-                break;
-            }
-        }
-
-        prev = current;
-        current = next;
-
-        if (!current) return false;
-
-    } while (current != start);
-
-    return visited.size() == loop_cells.size();
 }
 
 /* ---------------------------------------------------------------------[<]-

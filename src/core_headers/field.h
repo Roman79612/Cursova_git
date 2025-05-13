@@ -3,8 +3,8 @@
  Title: Field class definition
  Group: TV-42
  Student: Kriuchkov R. Y.
- Written: 2025-04-30
- Revised: 2025-05-07
+ Written: 2025-04-29
+ Revised: 2025-05-14
  Description: Header file for managing the puzzle grid and its cells.
  ------------------------------------------------------------------</Header>-*/
 
@@ -12,16 +12,19 @@
 #define FIELD_H
 
 #include <iostream>
-#include <utility>
-#include <vector>
 #include <stdexcept>
 #include <string>
 #include "../core_headers/cell.h"
 #include "../core_headers/direction.h"
 #include "../utils/ui.h"
 
+#define MIN_SIZE_FIELD 5
+#define MAX_SIZE_FIELD 25
+#define NUMBER_OF_TYPE_PEARL 2
+
 class Field {
 public:
+    //constructor
     Field();
     void init(int width, int height);
     bool is_initialized() const;
@@ -32,23 +35,15 @@ public:
 
     // Accessors
     Cell& get_cell(int x, int y);
-    const Cell* get_cell_ptr(int x, int y) const;
     int get_width() const;
     int get_height() const;
-    int get_white_count() const;
-    int get_black_count() const;
     std::vector<Direction> get_available_directions(Cell &cell);
     std::vector<Cell*> get_neighbors(Cell &cell);
     std::vector<Cell*> get_white_cells();
-    std::vector<Cell*> get_black_cells();
-    std::vector<Cell*> get_all_cells();    
+    std::vector<Cell*> get_black_cells();  
 
     // Resetting
     void reset_all_dirs();
-    void reset_all_visited();
-    void reset();
-    Field clone() const;
-
 
     // Utility functions
     bool in_bounds(int x, int y) const; 
@@ -63,11 +58,9 @@ public:
 private:
     int width;
     int height;
-    int white_count;
-    int black_count;
     std::vector<std::vector<Cell>> cells;
 
-    // Helper functions for printing
+    // Helper methods for printing
     void print_top_border() const;
     void print_bottom_border() const;
     void print_row_cells(int y) const;

@@ -4,7 +4,7 @@
  Group: TV-42
  Student: Kriuchkov R. Y.
  Written: 2025-04-30
- Revised: 2025-05-06
+ Revised: 2025-05-14
  Description: Implements edge and pattern rules for Masyu puzzle solving.
  ------------------------------------------------------------------</Header>-*/
 
@@ -71,11 +71,35 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
             next.set_type(CellType::LINE);
         }
 
+        int width = field.get_width();
+        int height = field.get_height();
+        int x = after_next.get_x();
+        int y = after_next.get_y();
+
+        if (x == 1 && y == 0) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::LEFT, Direction::DOWN);
+        } else if (x == width - 2 && y == 0) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::RIGHT, Direction::DOWN);
+        } else if (x == 0 && y == 1) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::UP, Direction::RIGHT);
+        } else if (x == 0 && y == height - 2) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::DOWN, Direction::RIGHT);
+        } else if (x == 1 && y == height - 1) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::LEFT, Direction::UP);
+        } else if (x == width - 2 && y == height - 1) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::RIGHT, Direction::UP);
+        } else if (x == width -1 && y == height - 2) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::DOWN, Direction::LEFT);
+        } else if (x == width - 1 && y == 1) {
+            Rules::turn_in_next_cell(field, graph, after_next, Direction::UP, Direction::LEFT);
+        } else {
+            return;
+        }
+
     } catch (const std::exception& e) {
         std::wcerr << L"[force_straight] Exception: " << e.what() << L"\n";
     }
 }
-
 
 /* ---------------------------------------------------------------------[<]-
  Function: Rules::connect_with_next
@@ -162,63 +186,6 @@ bool Rules::is_near_border(int x, int y, int width, int height) {
 
     } catch (const std::exception& e) {
         std::wcerr << L"[turn_in_next_cell] Error: " << e.what() << L"\n";
-    }
-}
-
-void Rules::apply_black_rule(Field& field, Graph& graph) {
-    for (Cell* pearl : field.get_black_cells()) {
-        int x = pearl->get_x();
-        int y = pearl->get_y();
-
-        for (Direction dir1 : DirectionHelper::get_all_dirs()) {
-            Direction dir2 = DirectionHelper::rotate_right(dir1);
-            int x1 = x + DirectionHelper::get_dx(dir1);
-            int y1 = y + DirectionHelper::get_dy(dir1);
-            int x2 = x + DirectionHelper::get_dx(dir2);
-            int y2 = y + DirectionHelper::get_dy(dir2);
-
-            int x3 = x1 + DirectionHelper::get_dx(dir1);
-            int y3 = y1 + DirectionHelper::get_dy(dir1);
-            int x4 = x2 + DirectionHelper::get_dx(dir2);
-            int y4 = y2 + DirectionHelper::get_dy(dir2);
-
-            if (!field.in_bounds(x1, y1) || !field.in_bounds(x2, y2)) continue;
-            if (!field.in_bounds(x3, y3) || !field.in_bounds(x4, y4)) continue;
-
-            Cell& c1 = field.get_cell(x1, y1);
-            Cell& c2 = field.get_cell(x2, y2);
-            Cell& c3 = field.get_cell(x3, y3);
-            Cell& c4 = field.get_cell(x4, y4);
-
-            graph.force_edge(*pearl, c1);
-            graph.force_edge(*pearl, c2);
-
-            graph.force_edge(c1, c3);
-            graph.force_edge(c2, c4);
-        }
-    }
-}
-
-void Rules::apply_white_rule(Field& field, Graph& graph) {
-    for (Cell* pearl : field.get_white_cells()) {
-        int x = pearl->get_x();
-        int y = pearl->get_y();
-
-        for (Direction dir : {Direction::UP, Direction::RIGHT}) {
-            Direction opp = DirectionHelper::opposite(dir);
-            int x1 = x + DirectionHelper::get_dx(dir);
-            int y1 = y + DirectionHelper::get_dy(dir);
-            int x2 = x + DirectionHelper::get_dx(opp);
-            int y2 = y + DirectionHelper::get_dy(opp);
-
-            if (!field.in_bounds(x1, y1) || !field.in_bounds(x2, y2)) continue;
-
-            Cell& neighbor1 = field.get_cell(x1, y1);
-            Cell& neighbor2 = field.get_cell(x2, y2);
-
-            graph.force_edge(*pearl, neighbor1);
-            graph.force_edge(*pearl, neighbor2);
-        }
     }
 }
 
