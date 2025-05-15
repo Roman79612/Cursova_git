@@ -436,11 +436,35 @@ Field create_field_5() {
  Function: input_user_pearls
  Synopsis: Prompts the user to enter coordinates and types (White/Black)
  ---------------------------------------------------------------------[>]-*/
- void input_user_pearls(Field& user_field, int width, int height, int num_cells) {
+void input_user_pearls(Field& user_field, int width, int height, int num_cells) {
     for (int i = 0; i < num_cells; ++i) {
+        std::vector<Cell*> white = user_field.get_white_cells();
+        std::vector<Cell*> black = user_field.get_black_cells();
+        if (!white.empty() || !black.empty()) {
+            std::wcout << BOLD;
+            ui::print_typing_effect(L"Pearls already have set on: ");
+            
+            bool first = true;
+            for (Cell* c : white) {
+                if (white.empty()) break;
+                if (!first) ui::print_typing_effect(L", ");
+                ui::print_typing_effect(L"(" + std::to_wstring(c->get_x()) + L", " + std::to_wstring(c->get_y()) + L")");
+                first = false;
+            }
+            first = true;
+            for (Cell* c : black) {
+                if (black.empty()) break;
+                if (!first) ui::print_typing_effect(L", ");
+                ui::print_typing_effect(L"(" + std::to_wstring(c->get_x()) + L", " + std::to_wstring(c->get_y()) + L")");
+                first = false;
+            }
+    
+            std::wcout << RESET_COLOUR << std::endl;
+        }
+
         std::wcout << BOLD;
 
-        ui::print_typing_effect(L"Enter the coordinates x ∈ [0, ");
+        ui::print_typing_effect(L"Enter the coordinates for pearl x ∈ [0, ");
         ui::print_typing_effect(width - 1);
         ui::print_typing_effect(L"], y ∈ [0, ");
         ui::print_typing_effect(height - 1);
@@ -453,29 +477,33 @@ Field create_field_5() {
             std::wcerr << L"Invalid coordinate input. Skipping cell.\n";
             continue;
         }
+        if (user_field.get_cell(coord.first, coord.second).get_type() == CellType::EMPTY) {
+            std::wcout << BOLD;
 
-        std::wcout << BOLD;
+            ui::print_typing_effect(L"Enter cell type for (");
+            ui::print_typing_effect(coord.first);
+            ui::print_typing_effect(L", ");
+            ui::print_typing_effect(coord.second);
+            ui::print_typing_effect(L")");
 
-        ui::print_typing_effect(L"Enter cell type for (");
-        ui::print_typing_effect(coord.first);
-        ui::print_typing_effect(L", ");
-        ui::print_typing_effect(coord.second);
-        ui::print_typing_effect(L")");
+            std::wcout << RESET_COLOUR << std::endl;
 
-        std::wcout << RESET_COLOUR << std::endl;
+            std::wcout << BOLD;
+            ui::print_typing_effect(L"1. White\n2. Black");
+            std::wcout << RESET_COLOUR << std::endl;
 
-        std::wcout << BOLD;
-        ui::print_typing_effect(L"1. White\n2. Black");
-        std::wcout << RESET_COLOUR << std::endl;
+            int cell_type = ui::get_one_int(NUMBER_OF_TYPE_PEARL);
 
-        int cell_type = ui::get_one_int(NUMBER_OF_TYPE_PEARL);
-
-        if (cell_type == 1) {
-            user_field.set_cell(Cell(coord.first, coord.second, CellType::WHITE));
-        } else if (cell_type == 2) {
-            user_field.set_cell(Cell(coord.first, coord.second, CellType::BLACK));
+            if (cell_type == 1) {
+                user_field.set_cell(Cell(coord.first, coord.second, CellType::WHITE));
+            } else if (cell_type == 2) {
+                user_field.set_cell(Cell(coord.first, coord.second, CellType::BLACK));
+            } else {
+                std::wcerr << L"Invalid choice. Please enter 1 for White or 2 for Black.\n";
+            }
         } else {
-            std::wcerr << L"Invalid choice. Please enter 1 for White or 2 for Black.\n";
+            ui::print_typing_effect(L"Cell isn't free. Skipping...\n");
+            continue;
         }
     }
 }
